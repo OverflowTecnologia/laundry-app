@@ -19,11 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -111,6 +109,15 @@ public class MachineControllerTest {
     }
 
     @Test
+    void should_returnException_whenMachineIdInvalid() throws Exception {
+
+        mockMvc.perform(get("/machine/adas")
+                        .contentType("application/json"))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void should_updateMachine_whenMachineIsUpdated() throws Exception {
         MachineDto mockMachine = getMachineDto(1L,"1", "Condominium 1", "Washer");
 
@@ -127,12 +134,11 @@ public class MachineControllerTest {
     @Test
     void should_deleteMachine_whenMachineIsDeleted() throws Exception {
 
-        when(machineService.deleteMachine(any())).thenReturn(true);
-
+        doNothing().when(machineService).deleteMachine(1L);
         mockMvc.perform(delete("/machine/1")
                         .contentType("application/json"))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     private static MachineDto getMachineDto(Long id, String identifier, String condominium, String typeOfMachine) {

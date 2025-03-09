@@ -38,7 +38,8 @@ public class MachineController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteMachine(@PathVariable Long id) {
-        return ResponseEntity.ok(machineService.deleteMachine(id));
+    public ResponseEntity<?> deleteMachine(@PathVariable Long id) {
+        machineService.deleteMachine(id);
+        return ResponseEntity.noContent().build();
     }
 }

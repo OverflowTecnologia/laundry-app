@@ -9,5 +9,5 @@ public interface MachineService {
 
     MachineDto updateMachine(MachineDto machineDto);
 
-    boolean deleteMachine(Long id);
+    void deleteMachine(Long id);
 }
