@@ -9,7 +9,9 @@ import com.overflow.laundry.util.mapper.MachineMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MachineServiceImpl implements MachineService {
@@ -53,5 +55,13 @@ public class MachineServiceImpl implements MachineService {
             throw new MachineNotFoundException("Machine not found");
         }
         machineRepository.deleteById(id);
+    }
+
+    @Override
+    public List<MachineDto> getAllMachines() {
+        List<Machine> allMachines = machineRepository.findAll();
+        return allMachines.stream()
+                .map(machineMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

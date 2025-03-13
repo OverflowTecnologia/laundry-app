@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/machine")
@@ -41,5 +43,10 @@ public class MachineController {
     public ResponseEntity<?> deleteMachine(@PathVariable Long id) {
         machineService.deleteMachine(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MachineDto>> getAllMachines() {
+        return ResponseEntity.ok(machineService.getAllMachines());
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -58,8 +60,8 @@ public class MachineControllerTest {
     @MethodSource("provideStringsForIsNull")
     void should_returnBadRequest_whenOneOfTheValuesIsNull(String identifier,
                                                       String condominium,
-                                                      String typeOfMachine) throws Exception {
-        MachineDto mockMachine = getMachineDto(null, identifier, condominium, typeOfMachine);
+                                                      String type) throws Exception {
+        MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
         String machineJson = objectMapper.writeValueAsString(mockMachine);
         mockMvc.perform(post("/machine")
@@ -73,8 +75,8 @@ public class MachineControllerTest {
     @MethodSource("provideStringsForIsEmpty")
     void should_returnBadRequest_whenOneOfTheValuesIsEmpty(String identifier,
                                                           String condominium,
-                                                          String typeOfMachine) throws Exception {
-        MachineDto mockMachine = getMachineDto(null, identifier, condominium, typeOfMachine);
+                                                          String type) throws Exception {
+        MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
         String machineJson = objectMapper.writeValueAsString(mockMachine);
         mockMvc.perform(post("/machine")
@@ -141,13 +143,40 @@ public class MachineControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    private static MachineDto getMachineDto(Long id, String identifier, String condominium, String typeOfMachine) {
+    private static MachineDto getMachineDto(Long id, String identifier, String condominium, String type) {
         return MachineDto.builder()
                 .id(id)
                 .identifier(identifier)
                 .condominium(condominium)
-                .typeOfMachine(typeOfMachine)
+                .type(type)
                 .build();
+    }
+
+    @Test
+    void should_returnListOfMachines_whenGetAllMachinesIsCalled() throws Exception {
+        MachineDto mockMachine = getMachineDto(1L,"1", "Condominium 1", "Washer");
+        MachineDto mockMachine2 = getMachineDto(2L,"2", "Condominium 2", "Washer");
+
+        when(machineService.getAllMachines()).thenReturn(List.of(mockMachine, mockMachine2));
+
+        String machineJson = objectMapper.writeValueAsString(mockMachine);
+        mockMvc.perform(get("/machine")
+                        .contentType("application/json")
+                        .content(machineJson))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @Test
+    void should_returnEmptyList_whenGetAllMachinesIsCalled() throws Exception {
+        when(machineService.getAllMachines()).thenReturn(List.of());
+
+        mockMvc.perform(get("/machine")
+                        .contentType("application/json"))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     private static Stream<Arguments> provideStringsForIsNull() {

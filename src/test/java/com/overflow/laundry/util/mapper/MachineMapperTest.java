@@ -34,7 +34,7 @@ public class MachineMapperTest {
                 .id(1L)
                 .identifier("Washing Machine")
                 .condominium("Condominium")
-                .typeOfMachine("Washer")
+                .type("Washer")
                 .build();
     }
 

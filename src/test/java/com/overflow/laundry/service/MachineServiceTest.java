@@ -103,6 +103,11 @@ public class MachineServiceTest {
         verify(machineRepository, never()).deleteById(id);
     }
 
+    @Test
+    void should_returnAllMachines_whenGetAllMachinesIsCalled() {
+        machineService.getAllMachines();
+        verify(machineRepository, times(1)).findAll();
+    }
 
     private static Machine getMockMachine() {
         return new Machine(1L,
@@ -116,7 +121,7 @@ public class MachineServiceTest {
                 .id(1L)
                 .identifier("Washing Machine")
                 .condominium("Condominium")
-                .typeOfMachine("Washer")
+                .type("Washer")
                 .build();
     }
 

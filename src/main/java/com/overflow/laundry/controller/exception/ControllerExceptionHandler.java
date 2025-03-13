@@ -1,7 +1,7 @@
 package com.overflow.laundry.controller.exception;
 
-import com.overflow.laundry.constant.HandlerErrors;
-import com.overflow.laundry.constant.ValidatorErrors;
+import com.overflow.laundry.constant.ExceptionHandlerErrors;
+import com.overflow.laundry.constant.ObjectValidatorErrors;
 import com.overflow.laundry.exception.ErrorResponse;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class ControllerExceptionHandler {
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             errorList.add(error.getDefaultMessage());
         });
-        ErrorResponse errorResponse = buildErrorResponse(HandlerErrors.INVALID_PARAMETER, errorList, ex);
+        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
     }
@@ -38,13 +38,13 @@ public class ControllerExceptionHandler {
     public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         List<String> errorList = new ArrayList<>();
         errorList.add(ex.getName() + " should be of type " + ex.getRequiredType().getName());
-        ErrorResponse errorResponse = buildErrorResponse(HandlerErrors.INVALID_PARAMETER, errorList, ex);
+        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MachineNotFoundException.class)
     public ResponseEntity<Object> handleMachineNotFoundException(MachineNotFoundException ex) {
-        ErrorResponse errorResponse = buildErrorResponse(HandlerErrors.NOT_FOUND, List.of(ValidatorErrors.MACHINE_NOT_FOUND), ex);
+        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.NOT_FOUND, List.of(ObjectValidatorErrors.MACHINE_NOT_FOUND), ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 

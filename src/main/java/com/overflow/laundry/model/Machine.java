@@ -16,8 +16,9 @@ import lombok.NoArgsConstructor;
 public class Machine {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
     private String identifier;
     private String condominium;
-    private String typeOfMachine;
+    private String type;
+
 }
