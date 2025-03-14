@@ -56,7 +56,7 @@ public class MachineControllerTest {
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
-        .andExpect(status().isAccepted());
+        .andExpect(status().isOk());
   }
 
   @ParameterizedTest
