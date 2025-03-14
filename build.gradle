@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'checkstyle'
 }
 
 group = 'com.overflow'
@@ -31,7 +32,21 @@ dependencies {
 	testImplementation 'com.h2database:h2'
 
 }
+checkstyle {
+	toolVersion = '10.12.7'
+	configFile = file("${rootDir}/config/checkStyle/google_checks.xml")
+	showViolations = true
+	ignoreFailures = false
+	maxWarnings = 0
+	maxErrors = 0
+}
 
+tasks.withType(Checkstyle) {
+	reports {
+		xml.required = false
+		html.required = true
+	}
+}
 tasks.named('test') {
 	useJUnitPlatform()
 }

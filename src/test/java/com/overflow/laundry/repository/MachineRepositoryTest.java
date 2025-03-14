@@ -17,26 +17,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("test")
 public class MachineRepositoryTest {
 
-    @Autowired
-    private MachineRepository machineRepository;
+  @Autowired
+  private MachineRepository machineRepository;
 
-    @Test
-    public void should_returnMachine_whenFindMachineByIdentifierIsCalled(){
-        Machine machine = new Machine();
-        machine.setIdentifier("Washing Machine");
-        machine.setCondominium("Condominium");
-        machine.setType("Washer");
+  @Test
+  public void should_returnMachine_whenFindMachineByIdentifierIsCalled() {
+    Machine machine = new Machine();
+    machine.setIdentifier("Washing Machine");
+    machine.setCondominium("Condominium");
+    machine.setType("Washer");
 
-        machineRepository.save(machine);
-        Machine foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
-        assertEquals(machine, foundMachine);
-    }
+    machineRepository.save(machine);
+    Machine foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
+    assertEquals(machine, foundMachine);
+  }
 
-    @Test
-    void given_nothing_whenFindMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
-        assertThrows(MachineNotFoundException.class, () -> {
-            machineRepository.findMachineByIdentifier("Washing Machine");
-        });
-    }
+  @Test
+  void given_nothing_whenFindMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
+    assertThrows(MachineNotFoundException.class, () -> {
+      machineRepository.findMachineByIdentifier("Washing Machine");
+    });
+  }
 
 }

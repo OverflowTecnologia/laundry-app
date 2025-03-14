@@ -13,18 +13,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MachineRepositoryImpl implements MachineRepositoryCustom {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-    @Override
-    public Machine findMachineByIdentifier(String identifier) {
-        try {
-            TypedQuery<Machine> query = entityManager.createQuery(
-                    "SELECT m FROM Machine m WHERE m.identifier = :identifier", Machine.class);
-            query.setParameter("identifier", identifier);
-            return query.getSingleResult();
-        } catch (NoResultException e) {
-            throw new MachineNotFoundException(ObjectValidatorErrors.MACHINE_NOT_FOUND);
-        }
+  @Override
+  public Machine findMachineByIdentifier(String identifier) {
+    try {
+      TypedQuery<Machine> query = entityManager.createQuery(
+          "SELECT m FROM Machine m WHERE m.identifier = :identifier", Machine.class);
+      query.setParameter("identifier", identifier);
+      return query.getSingleResult();
+    } catch (NoResultException e) {
+      throw new MachineNotFoundException(ObjectValidatorErrors.MACHINE_NOT_FOUND);
     }
+  }
 }

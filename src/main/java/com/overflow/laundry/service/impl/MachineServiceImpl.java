@@ -16,52 +16,52 @@ import java.util.stream.Collectors;
 @Service
 public class MachineServiceImpl implements MachineService {
 
-    private final MachineRepository machineRepository;
-    private final MachineMapper machineMapper;
+  private final MachineRepository machineRepository;
+  private final MachineMapper machineMapper;
 
-    @Autowired
-    public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper) {
-        this.machineRepository = machineRepository;
-        this.machineMapper = machineMapper;
-    }
+  @Autowired
+  public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper) {
+    this.machineRepository = machineRepository;
+    this.machineMapper = machineMapper;
+  }
 
-    @Override
-    public MachineDto createMachine(MachineDto machineDto) {
-        Machine machine = machineMapper.toEntity(machineDto);
-        return machineMapper.toDto(machineRepository.save(machine));
-    }
+  @Override
+  public MachineDto createMachine(MachineDto machineDto) {
+    Machine machine = machineMapper.toEntity(machineDto);
+    return machineMapper.toDto(machineRepository.save(machine));
+  }
 
-    @Override
-    public MachineDto getMachineById(Long id) {
-        Optional<Machine> machine = machineRepository.findById(id);
-        if (machine.isEmpty()) {
-            throw new MachineNotFoundException("Machine not found");
-        }
-        return machineMapper.toDto(machine.get());
+  @Override
+  public MachineDto getMachineById(Long id) {
+    Optional<Machine> machine = machineRepository.findById(id);
+    if (machine.isEmpty()) {
+      throw new MachineNotFoundException("Machine not found");
     }
+    return machineMapper.toDto(machine.get());
+  }
 
-    @Override
-    public MachineDto updateMachine(MachineDto machineDto) {
-        if (! machineRepository.existsById(machineDto.id())) {
-            throw new MachineNotFoundException("Machine not found");
-        }
-        Machine machine = machineMapper.toEntity(machineDto);
-        return machineMapper.toDto(machineRepository.save(machine));
+  @Override
+  public MachineDto updateMachine(MachineDto machineDto) {
+    if (!machineRepository.existsById(machineDto.id())) {
+      throw new MachineNotFoundException("Machine not found");
     }
+    Machine machine = machineMapper.toEntity(machineDto);
+    return machineMapper.toDto(machineRepository.save(machine));
+  }
 
-    @Override
-    public void deleteMachine(Long id) {
-        if (! machineRepository.existsById(id)) {
-            throw new MachineNotFoundException("Machine not found");
-        }
-        machineRepository.deleteById(id);
+  @Override
+  public void deleteMachine(Long id) {
+    if (!machineRepository.existsById(id)) {
+      throw new MachineNotFoundException("Machine not found");
     }
+    machineRepository.deleteById(id);
+  }
 
-    @Override
-    public List<MachineDto> getAllMachines() {
-        List<Machine> allMachines = machineRepository.findAll();
-        return allMachines.stream()
-                .map(machineMapper::toDto)
-                .collect(Collectors.toList());
-    }
+  @Override
+  public List<MachineDto> getAllMachines() {
+    List<Machine> allMachines = machineRepository.findAll();
+    return allMachines.stream()
+        .map(machineMapper::toDto)
+        .collect(Collectors.toList());
+  }
 }

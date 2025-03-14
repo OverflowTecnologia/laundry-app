@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
-public record MachineDto (Long id,
+public record MachineDto(Long id,
                           @NotEmpty(message = ObjectValidatorErrors.MACHINE_IDENTIFIER_NOT_EMPTY_NULL)
                           @NotNull(message = ObjectValidatorErrors.MACHINE_IDENTIFIER_NOT_EMPTY_NULL)
                           String identifier,

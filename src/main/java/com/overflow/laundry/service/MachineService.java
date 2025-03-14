@@ -5,13 +5,13 @@ import com.overflow.laundry.model.dto.MachineDto;
 import java.util.List;
 
 public interface MachineService {
-    MachineDto createMachine(MachineDto machineDto);
+  MachineDto createMachine(MachineDto machineDto);
 
-    MachineDto getMachineById(Long id);
+  MachineDto getMachineById(Long id);
 
-    MachineDto updateMachine(MachineDto machineDto);
+  MachineDto updateMachine(MachineDto machineDto);
 
-    void deleteMachine(Long id);
+  void deleteMachine(Long id);
 
-    List<MachineDto> getAllMachines();
+  List<MachineDto> getAllMachines();
 }

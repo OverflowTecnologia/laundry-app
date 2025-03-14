@@ -23,106 +23,112 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class MachineServiceTest {
 
-    MachineService machineService;
+  MachineService machineService;
 
-    @InjectMocks
-    MachineMapper machineMapper;
+  @InjectMocks
+  MachineMapper machineMapper;
 
-    @Mock
-    MachineRepository machineRepository;
+  @Mock
+  MachineRepository machineRepository;
 
-    @BeforeEach
-    void setUp(){
-        machineService = new MachineServiceImpl(machineRepository, machineMapper);
-    }
+  @BeforeEach
+  void setUp() {
+    machineService = new MachineServiceImpl(machineRepository, machineMapper);
+  }
 
-    @Test
-    void should_createMachine_whenCreateMachineIsCalled() {
+  @Test
+  void should_createMachine_whenCreateMachineIsCalled() {
 
-        Machine machine = getMockMachine();
-        when(machineRepository.save(any(Machine.class))).thenReturn(machine);
+    Machine machine = getMockMachine();
+    when(machineRepository.save(any(Machine.class))).thenReturn(machine);
 
-        MachineDto machineDto = getMachineDto();
-        MachineDto machineCreated = machineService.createMachine(machineDto);
+    MachineDto machineDto = getMachineDto();
+    MachineDto machineCreated = machineService.createMachine(machineDto);
 
-        assertEquals(machineDto, machineCreated);
+    assertEquals(machineDto, machineCreated);
 
-    }
+  }
 
 
-    @Test
-    void should_returnMachineDto_whenGetMachineByIdIsCalled() {
-        Machine mockMachine = getMockMachine();
-        when(machineRepository.findById(any())).thenReturn(Optional.of(mockMachine));
+  @Test
+  void should_returnMachineDto_whenGetMachineByIdIsCalled() {
+    Machine mockMachine = getMockMachine();
+    when(machineRepository.findById(any())).thenReturn(Optional.of(mockMachine));
 
-        MachineDto machineDto = getMachineDto();
-        MachineDto machineFound = machineService.getMachineById(1L);
+    MachineDto machineDto = getMachineDto();
+    MachineDto machineFound = machineService.getMachineById(1L);
 
-        assertEquals(machineDto, machineFound);
-    }
+    assertEquals(machineDto, machineFound);
+  }
 
-    @Test
-    void should_thrownMachineNotFoundException_whenGetMachineByIdIsCalled() {
-        when(machineRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(MachineNotFoundException.class, () -> { machineService.getMachineById(1L);});
+  @Test
+  void should_thrownMachineNotFoundException_whenGetMachineByIdIsCalled() {
+    when(machineRepository.findById(any())).thenReturn(Optional.empty());
+    assertThrows(MachineNotFoundException.class, () -> {
+      machineService.getMachineById(1L);
+    });
 
-    }
+  }
 
-    @Test
-    void should_updateMachine_whenUpdateMachineIsCalled() {
-        Machine machine = getMockMachine();
-        when(machineRepository.existsById(any())).thenReturn(true);
-        when(machineRepository.save(any(Machine.class))).thenReturn(machine);
+  @Test
+  void should_updateMachine_whenUpdateMachineIsCalled() {
+    Machine machine = getMockMachine();
+    when(machineRepository.existsById(any())).thenReturn(true);
+    when(machineRepository.save(any(Machine.class))).thenReturn(machine);
 
-        MachineDto machineDto = getMachineDto();
-        MachineDto machineUpdated = machineService.updateMachine(machineDto);
+    MachineDto machineDto = getMachineDto();
+    MachineDto machineUpdated = machineService.updateMachine(machineDto);
 
-        assertEquals(machineDto, machineUpdated);
-    }
+    assertEquals(machineDto, machineUpdated);
+  }
 
-    @Test
-    void should_thrownMachineNotFoundException_whenUpdateMachineIsCalled() {
-        when(machineRepository.existsById(any())).thenReturn(false);
-        assertThrows(MachineNotFoundException.class, () -> { machineService.updateMachine(getMachineDto());});
-        verify(machineRepository, never()).save(any());
-    }
+  @Test
+  void should_thrownMachineNotFoundException_whenUpdateMachineIsCalled() {
+    when(machineRepository.existsById(any())).thenReturn(false);
+    assertThrows(MachineNotFoundException.class, () -> {
+      machineService.updateMachine(getMachineDto());
+    });
+    verify(machineRepository, never()).save(any());
+  }
 
-    @Test
-    void should_deleteMachine_whenDeleteMachineIsCalled() {
-        Long id = 1L;
-        when(machineRepository.existsById(any())).thenReturn(true);
-        machineService.deleteMachine(id);
-        verify(machineRepository, times(1)).deleteById(id);
-    }
+  @Test
+  void should_deleteMachine_whenDeleteMachineIsCalled() {
+    Long id = 1L;
+    when(machineRepository.existsById(any())).thenReturn(true);
+    machineService.deleteMachine(id);
+    verify(machineRepository, times(1)).deleteById(id);
+  }
 
-    @Test
-    void should_thrownMachineNotFoundException_whenDeleteMachineIsCalled() {
-        Long id = 1L;
-        when(machineRepository.existsById(any())).thenReturn(false);
-        assertThrows(MachineNotFoundException.class, () -> { machineService.deleteMachine(id);});
-        verify(machineRepository, never()).deleteById(id);
-    }
+  @Test
+  void should_thrownMachineNotFoundException_whenDeleteMachineIsCalled() {
+    Long id = 1L;
+    when(machineRepository.existsById(any())).thenReturn(false);
+    assertThrows(MachineNotFoundException.class, () -> {
+      machineService.deleteMachine(id);
+    });
+    verify(machineRepository, never()).deleteById(id);
+  }
 
-    @Test
-    void should_returnAllMachines_whenGetAllMachinesIsCalled() {
-        machineService.getAllMachines();
-        verify(machineRepository, times(1)).findAll();
-    }
+  @Test
+  void should_returnAllMachines_whenGetAllMachinesIsCalled() {
+    machineService.getAllMachines();
+    verify(machineRepository, times(1)).findAll();
+  }
 
-    private static Machine getMockMachine() {
-        return new Machine(1L,
-                "Washing Machine",
-                "Condominium",
-                "Washer");
-    }
+  private static Machine getMockMachine() {
+    return new Machine(1L,
+        "Washing Machine",
+        "Condominium",
+        "Washer");
+  }
 
-    private static MachineDto getMachineDto() {
-        return MachineDto.builder()
-                .id(1L)
-                .identifier("Washing Machine")
-                .condominium("Condominium")
-                .type("Washer")
-                .build();
-    }
+  private static MachineDto getMachineDto() {
+    return MachineDto.builder()
+        .id(1L)
+        .identifier("Washing Machine")
+        .condominium("Condominium")
+        .type("Washer")
+        .build();
+  }
 
 }
