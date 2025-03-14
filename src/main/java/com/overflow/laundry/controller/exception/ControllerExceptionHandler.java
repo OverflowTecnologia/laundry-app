@@ -20,39 +20,40 @@ import java.util.List;
 @RestControllerAdvice
 public class ControllerExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ControllerExceptionHandler.class);
-    private static final String LOG_PREFIX = "[LAUNDRY-APP]";
+  private static final Logger log = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+  private static final String LOG_PREFIX = "[LAUNDRY-APP]";
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        List<String> errorList = new ArrayList<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            errorList.add(error.getDefaultMessage());
-        });
-        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    List<String> errorList = new ArrayList<>();
+    ex.getBindingResult().getAllErrors().forEach((error) -> {
+      errorList.add(error.getDefaultMessage());
+    });
+    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
-    }
+  }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
-        List<String> errorList = new ArrayList<>();
-        errorList.add(ex.getName() + " should be of type " + ex.getRequiredType().getName());
-        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+    List<String> errorList = new ArrayList<>();
+    errorList.add(ex.getName() + " should be of type " + ex.getRequiredType().getName());
+    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  }
 
-    @ExceptionHandler(MachineNotFoundException.class)
-    public ResponseEntity<Object> handleMachineNotFoundException(MachineNotFoundException ex) {
-        ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.NOT_FOUND, List.of(ObjectValidatorErrors.MACHINE_NOT_FOUND), ex);
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
+  @ExceptionHandler(MachineNotFoundException.class)
+  public ResponseEntity<Object> handleMachineNotFoundException(MachineNotFoundException ex) {
+    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.NOT_FOUND,
+        List.of(ObjectValidatorErrors.MACHINE_NOT_FOUND), ex);
+    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+  }
 
 
-    private ErrorResponse buildErrorResponse(String message, List<String> detail, Exception ex) {
-        String logHeader = LOG_PREFIX + "Error message:" + message;
-        log.warn(logHeader, detail, ex);
-        return new ErrorResponse(message, detail);
-    }
+  private ErrorResponse buildErrorResponse(String message, List<String> detail, Exception ex) {
+    String logHeader = LOG_PREFIX + "Error message:" + message;
+    log.warn(logHeader, detail, ex);
+    return new ErrorResponse(message, detail);
+  }
 }
 

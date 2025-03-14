@@ -32,21 +32,20 @@ dependencies {
 	testImplementation 'com.h2database:h2'
 
 }
+
 checkstyle {
-	toolVersion = '10.12.7'
-	configFile = file("${rootDir}/config/checkStyle/google_checks.xml")
-	showViolations = true
-	ignoreFailures = false
-	maxWarnings = 0
-	maxErrors = 0
+	toolVersion = '10.21.3' // Specify the Checkstyle version
+	configFile = file('config/checkStyle/google_checks.xml') // Path to your Checkstyle configuration file
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
 	reports {
 		xml.required = false
 		html.required = true
+		html.outputLocation = file("${buildDir}/reports/checkstyle/checkstyle.html")
 	}
 }
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
