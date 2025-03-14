@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("test")
 public class MachineRepositoryTest {
 
-  @Autowired
-  private MachineRepository machineRepository;
+    @Autowired
+    private MachineRepository machineRepository;
 
   @Test
   public void should_returnMachine_whenFindMachineByIdentifierIsCalled() {
