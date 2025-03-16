@@ -24,18 +24,19 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
 	implementation 'org.hibernate.orm:hibernate-core:6.6.10.Final'
-	implementation 'org.postgresql:postgresql:42.5.0'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.postgresql:postgresql:42.7.5'
 	compileOnly 'org.projectlombok:lombok:1.18.36'
 	annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 }
 
 checkstyle {
-	toolVersion = '10.21.3' // Specify the Checkstyle version
-	configFile = file('config/checkStyle/google_checks.xml') // Path to your Checkstyle configuration file
+	toolVersion = '10.21.3'
+	configFile = file('config/checkStyle/google_checks.xml')
 }
 
 tasks.withType(Checkstyle).configureEach {
