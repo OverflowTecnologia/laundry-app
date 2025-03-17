@@ -1,11 +1,12 @@
 package com.overflow.laundry.controller;
 
 
+import com.overflow.laundry.config.StandardResponse;
 import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_CREATED;
+import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_DELETED;
+import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_FOUND;
+import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_UPDATED;
 
 
 @RestController
@@ -29,38 +35,40 @@ public class MachineController {
   }
 
   @PostMapping
-  public ResponseEntity<MachineDto> createMachine(@Valid @RequestBody MachineDto machineDto) {
+  public ResponseEntity<StandardResponse<MachineDto>> createMachine(@Valid @RequestBody MachineDto machineDto) {
     MachineDto createdMachine = machineService.createMachine(machineDto);
-    return ResponseEntity.accepted().body(createdMachine);
+    return StandardResponse.success(MACHINE_CREATED, createdMachine);
+
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<MachineDto> getMachineById(@PathVariable Long id) {
+  public ResponseEntity<StandardResponse<MachineDto>> getMachineById(@PathVariable Long id) {
     MachineDto machine = machineService.getMachineById(id);
-    return ResponseEntity.ok(machine);
+    return StandardResponse.success(MACHINE_FOUND, machine);
   }
 
   @PutMapping
-  public ResponseEntity<MachineDto> updateMachine(@Valid @RequestBody MachineDto machineDto) {
+  public ResponseEntity<StandardResponse<MachineDto>> updateMachine(@Valid @RequestBody MachineDto machineDto) {
     MachineDto updatedMachine = machineService.updateMachine(machineDto);
-    return ResponseEntity.accepted().body(updatedMachine);
+    return StandardResponse.success(MACHINE_UPDATED, updatedMachine);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteMachine(@PathVariable Long id) {
+  public ResponseEntity<StandardResponse<String>> deleteMachine(@PathVariable Long id) {
     machineService.deleteMachine(id);
-    return ResponseEntity.noContent().build();
+    return StandardResponse.success(MACHINE_DELETED, "");
   }
 
   @GetMapping
-  public Page<MachineDto> getAllMachines(@RequestParam(required = false) Integer page,
-                                         @RequestParam(required = false) Integer size,
-                                         @RequestParam(required = false) String sortBy,
-                                         @RequestParam(required = false) String direction) {
+  public ResponseEntity<StandardResponse<PaginationResponseDto<MachineDto>>> getAllMachines(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sortBy,
+      @RequestParam(required = false) String direction) {
 
-    PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
-    Page<MachineDto> allMachines = machineService.getAllMachines(paginationRequest);
-    return allMachines;
+    final PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
+    final PaginationResponseDto<MachineDto> allMachines = machineService.getAllMachines(paginationRequest);
+    return StandardResponse.success(MACHINE_FOUND, allMachines);
 
   }
 }

@@ -4,6 +4,7 @@ import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.MachineService;
 import com.overflow.laundry.util.PaginationUtils;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -60,9 +62,19 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public Page<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
+  public PaginationResponseDto<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
     Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
     Page<Machine> allMachines = machineRepository.findAll(pageable);
-    return allMachines.map(machineMapper::toDto);
+    List<MachineDto> listMachineDto = allMachines.stream().map(machineMapper::toDto).toList();
+    return PaginationResponseDto.<MachineDto>builder()
+        .content(listMachineDto)
+        .totalPages(allMachines.getTotalPages())
+        .totalElements(allMachines.getTotalElements())
+        .size(allMachines.getSize())
+        .page(allMachines.getNumber())
+        .empty(allMachines.isEmpty())
+        .last(allMachines.isLast())
+        .first(allMachines.isFirst())
+        .build();
   }
 }

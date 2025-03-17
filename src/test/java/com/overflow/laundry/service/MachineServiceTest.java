@@ -46,7 +46,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_createMachine_whenCreateMachineIsCalled() {
+  void givenMachine_whenCreateMachineIsCalled_thenCreateMachine() {
 
     Machine machine = getMockMachine();
     when(machineRepository.save(any(Machine.class))).thenReturn(machine);
@@ -60,7 +60,7 @@ public class MachineServiceTest {
 
 
   @Test
-  void should_returnMachineDto_whenGetMachineByIdIsCalled() {
+  void givenMachineExists_whenGetMachineByIdIsCalled_thenReturnMachineDto() {
     Machine mockMachine = getMockMachine();
     when(machineRepository.findById(any())).thenReturn(Optional.of(mockMachine));
 
@@ -71,7 +71,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_thrownMachineNotFoundException_whenGetMachineByIdIsCalled() {
+  void givenMachineDoesNotExist_whenGetMachineByIdIsCalled_thenThrowMachineNotFoundException() {
     when(machineRepository.findById(any())).thenReturn(Optional.empty());
     assertThrows(MachineNotFoundException.class, () -> {
       machineService.getMachineById(1L);
@@ -80,7 +80,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_updateMachine_whenUpdateMachineIsCalled() {
+  void givenMachine_whenUpdateMachineIsCalled_thenUpdateMachine() {
     Machine machine = getMockMachine();
     when(machineRepository.existsById(any())).thenReturn(true);
     when(machineRepository.save(any(Machine.class))).thenReturn(machine);
@@ -92,7 +92,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_thrownMachineNotFoundException_whenUpdateMachineIsCalled() {
+  void givenMachineDoesNotExist_whenUpdateMachineIsCalled_thenThrowMachineNotFoundException() {
     when(machineRepository.existsById(any())).thenReturn(false);
     assertThrows(MachineNotFoundException.class, () -> {
       machineService.updateMachine(getMachineDto());
@@ -101,7 +101,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_deleteMachine_whenDeleteMachineIsCalled() {
+  void givenMachine_whenDeleteMachineIsCalled_thenShouldDeleteMachine() {
     Long id = 1L;
     when(machineRepository.existsById(any())).thenReturn(true);
     machineService.deleteMachine(id);
@@ -109,7 +109,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_thrownMachineNotFoundException_whenDeleteMachineIsCalled() {
+  void givenMachineDoesNotExist_whenDeleteMachineIsCalled_thenThrowMachineNotFoundException() {
     Long id = 1L;
     when(machineRepository.existsById(any())).thenReturn(false);
     assertThrows(MachineNotFoundException.class, () -> {
@@ -119,7 +119,7 @@ public class MachineServiceTest {
   }
 
   @Test
-  void given_defaultPagination_whenGetAllMachinesIsCalled_thenReturnAllMachines() {
+  void givenDefaultPagination_whenGetAllMachinesIsCalled_thenReturnAllMachines() {
     Machine mockMachine = getMockMachine();
     List<Machine> machines = List.of(mockMachine);
     Page<Machine> machinePage = new PageImpl<>(machines);

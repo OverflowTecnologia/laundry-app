@@ -33,7 +33,7 @@ public class MachineRepositoryTest {
   }
 
   @Test
-  void given_nothing_whenFindMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
+  void givenNothing_whenFindMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
     assertThrows(MachineNotFoundException.class, () -> {
       machineRepository.findMachineByIdentifier("Washing Machine");
     });

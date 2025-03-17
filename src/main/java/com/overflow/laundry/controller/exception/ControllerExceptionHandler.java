@@ -1,20 +1,23 @@
 package com.overflow.laundry.controller.exception;
 
-import com.overflow.laundry.constant.ExceptionHandlerErrors;
-import com.overflow.laundry.constant.ObjectValidatorErrors;
+import com.overflow.laundry.config.StandardResponse;
 import com.overflow.laundry.exception.ErrorResponse;
 import com.overflow.laundry.exception.MachineNotFoundException;
+import com.overflow.laundry.exception.StandardErrorMessage;
+import com.overflow.laundry.util.MessageResponseEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.overflow.laundry.util.MessageResponseEnum.BAD_REQUEST;
+import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_NOT_FOUND;
 
 
 @RestControllerAdvice
@@ -24,36 +27,49 @@ public class ControllerExceptionHandler {
   private static final String LOG_PREFIX = "[LAUNDRY-APP]";
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    List<String> errorList = new ArrayList<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      errorList.add(error.getDefaultMessage());
-    });
-    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleValidationExceptions(
+      MethodArgumentNotValidException ex, WebRequest request) {
 
+    StandardErrorMessage errorMessage = StandardErrorMessage.builder()
+        .details(ex.getBindingResult().getAllErrors().getFirst().getDefaultMessage())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return StandardResponse.error(BAD_REQUEST, errorMessage);
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<Object> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
-    List<String> errorList = new ArrayList<>();
-    errorList.add(ex.getName() + " should be of type " + ex.getRequiredType().getName());
-    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER, errorList, ex);
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMethodArgumentTypeMismatchException(
+      MethodArgumentTypeMismatchException ex, WebRequest request) {
+    StandardErrorMessage message = StandardErrorMessage.builder()
+        .details(ex.getName() + " should be of type " + ex.getRequiredType().getName())
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+    return StandardResponse.error(BAD_REQUEST, message);
   }
 
   @ExceptionHandler(MachineNotFoundException.class)
-  public ResponseEntity<Object> handleMachineNotFoundException(MachineNotFoundException ex) {
-    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.NOT_FOUND,
-        List.of(ObjectValidatorErrors.MACHINE_NOT_FOUND), ex);
-    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMachineNotFoundException(
+      MachineNotFoundException ex, WebRequest request) {
+    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+    return StandardResponse.error(MACHINE_NOT_FOUND, message);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER,
-        List.of(ex.getMessage()), ex);
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleIllegalArgumentException(
+      IllegalArgumentException ex, WebRequest request) {
+    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+    return StandardResponse.error(MessageResponseEnum.INVALID_PARAMETER, message);
+
+  }
+
+  private static StandardErrorMessage getStandardErrorMessage(Exception ex, WebRequest request) {
+    String messageDetail = ex.getLocalizedMessage();
+    final String logHeader = LOG_PREFIX + "WARN";
+    log.warn(logHeader, messageDetail, ex);
+    return StandardErrorMessage.builder()
+        .details(messageDetail)
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
   }
 
 

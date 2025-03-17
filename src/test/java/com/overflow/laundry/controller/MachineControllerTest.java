@@ -6,6 +6,7 @@ import com.overflow.laundry.constant.ObjectValidatorErrors;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +15,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,7 +48,7 @@ public class MachineControllerTest {
   private MachineService machineService;
 
   @Test
-  void should_returnAccepted_whenMachineIsCreated() throws Exception {
+  void givenMockedMachine_whenMachineIsCreated_thenReturnCreated() throws Exception {
 
     MachineDto mockMachine = getMachineDto(null, "Washer 1", "Condominium 1", "Washer");
 
@@ -60,14 +59,14 @@ public class MachineControllerTest {
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
-        .andExpect(status().isAccepted());
+        .andExpect(status().isCreated());
   }
 
   @ParameterizedTest
   @MethodSource("provideStringsForIsNull")
-  void should_returnBadRequest_whenOneOfTheValuesIsNull(String identifier,
-                                                        String condominium,
-                                                        String type) throws Exception {
+  void givenMachineWithNullValue_whenMachineIsCreated_thenReturnBadRequest(String identifier,
+                                                                           String condominium,
+                                                                           String type) throws Exception {
     MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
@@ -80,9 +79,9 @@ public class MachineControllerTest {
 
   @ParameterizedTest
   @MethodSource("provideStringsForIsEmpty")
-  void should_returnBadRequest_whenOneOfTheValuesIsEmpty(String identifier,
-                                                         String condominium,
-                                                         String type) throws Exception {
+  void givenMachineWithEmptyValue_whenMachineIsCreated_thenReturnBadRequest(String identifier,
+                                                                            String condominium,
+                                                                            String type) throws Exception {
     MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
@@ -94,7 +93,7 @@ public class MachineControllerTest {
   }
 
   @Test
-  void should_returnMachine_whenGetMachineById() throws Exception {
+  void givenMachineExists_whenGetMachineById_thenReturnMachine() throws Exception {
     MachineDto mockMachine = getMachineDto(1L, "1", "Condominium 1", "Washer");
 
     when(machineService.getMachineById(any())).thenReturn(mockMachine);
@@ -108,7 +107,7 @@ public class MachineControllerTest {
   }
 
   @Test
-  void should_returnMachineNotFoundException_whenGetMachineById() throws Exception {
+  void givenMachineDoesNotExist_whenGetMachineById_thenReturnMachineNotFoundException() throws Exception {
 
     when(machineService.getMachineById(any())).thenThrow(MachineNotFoundException.class);
     mockMvc.perform(get("/machine/1")
@@ -118,7 +117,7 @@ public class MachineControllerTest {
   }
 
   @Test
-  void should_returnException_whenMachineIdInvalid() throws Exception {
+  void givenInvalidMachineId_whenGetMachineById_thenReturnBadRequest() throws Exception {
 
     mockMvc.perform(get("/machine/adas")
             .contentType("application/json"))
@@ -127,7 +126,7 @@ public class MachineControllerTest {
   }
 
   @Test
-  void should_updateMachine_whenMachineIsUpdated() throws Exception {
+  void givenMachine_whenMachineIsUpdated_thenReturnAccepted() throws Exception {
     MachineDto mockMachine = getMachineDto(1L, "1", "Condominium 1", "Washer");
 
     when(machineService.updateMachine(any(MachineDto.class))).thenReturn(mockMachine);
@@ -141,7 +140,7 @@ public class MachineControllerTest {
   }
 
   @Test
-  void should_deleteMachine_whenMachineIsDeleted() throws Exception {
+  void givenMachine_whenMachineIsDeleted_thenShouldDeleteMachine() throws Exception {
 
     doNothing().when(machineService).deleteMachine(1L);
     mockMvc.perform(delete("/machine/1")
@@ -150,51 +149,49 @@ public class MachineControllerTest {
         .andExpect(status().isNoContent());
   }
 
-  private static MachineDto getMachineDto(Long id, String identifier, String condominium,
-                                          String type) {
-    return MachineDto.builder()
-        .id(id)
-        .identifier(identifier)
-        .condominium(condominium)
-        .type(type)
+
+  @Test
+  void givenDefaultPagination_whenGetAllMachinesIsCalled_thenReturnEmptyList() throws Exception {
+
+    PaginationResponseDto<MachineDto> mockPaginationResponse = PaginationResponseDto.<MachineDto>builder()
+        .content(List.of())
+        .totalPages(0)
+        .totalElements(0)
+        .size(10)
+        .page(0)
+        .empty(true)
+        .last(true)
+        .first(true)
         .build();
-  }
 
-  @Test
-  void given_defaultPagination_whenGetAllMachinesIsCalled_thenReturnEmptyList() throws Exception {
-
-    Page<MachineDto> page = new PageImpl<>(List.of());
-    when(machineService.getAllMachines(any())).thenReturn(page);
+    when(machineService.getAllMachines(any())).thenReturn(mockPaginationResponse);
     mockMvc.perform(get("/machine")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content").isEmpty());
+        .andExpect(jsonPath("$.data.content").isEmpty());
   }
 
   @Test
-  void given_defaultPagination_whenGetAllMachinesIsCalled_thenReturnListOfMachines() throws Exception {
-    MachineDto mockMachine = getMachineDto(1L, "1", "Condominium 1", "Washer");
-    MachineDto mockMachine2 = getMachineDto(2L, "2", "Condominium 2", "Washer");
+  void givenDefaultPagination_whenGetAllMachinesIsCalled_thenReturnListOfMachines() throws Exception {
 
-    List<MachineDto> machines = List.of(mockMachine, mockMachine2);
-    Page<MachineDto> machinePage = new PageImpl<>(machines);
+    PaginationResponseDto<MachineDto> mockPaginationResponse = getMachineDtoPaginationResponseDto();
+
     when(machineService.getAllMachines(any(PaginationRequestDto.class)))
-        .thenReturn(machinePage);
+        .thenReturn(mockPaginationResponse);
 
     mockMvc.perform(get("/machine")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].id").value(1))
-        .andExpect(jsonPath("$.content[1].id").value(2));
+        .andExpect(jsonPath("$.data.content[0].id").value(1))
+        .andExpect(jsonPath("$.data.content[1].id").value(2));
   }
 
   @Test
-  void given_paginationInfoIsProvided_whenGetAllMachinesIsCalled_thenReturnListOfMachines() throws Exception {
-    MachineDto mockMachine = getMachineDto(1L, "1", "Condominium 1", "Washer");
-    MachineDto mockMachine2 = getMachineDto(2L, "2", "Condominium 2", "Washer");
+  void givenPaginationInfoIsProvided_whenGetAllMachinesIsCalled_thenReturnListOfMachines() throws Exception {
 
+    PaginationResponseDto<MachineDto> mockPaginationResponse = getMachineDtoPaginationResponseDto();
     PaginationRequestDto paginationRequestDto = PaginationRequestDto.builder()
         .page(1)
         .size(10)
@@ -202,10 +199,9 @@ public class MachineControllerTest {
         .direction("DESC")
         .build();
 
-    List<MachineDto> machines = List.of(mockMachine, mockMachine2);
-    Page<MachineDto> machinePage = new PageImpl<>(machines);
+
     when(machineService.getAllMachines(paginationRequestDto))
-        .thenReturn(machinePage);
+        .thenReturn(mockPaginationResponse);
 
     mockMvc.perform(get("/machine?page=" + paginationRequestDto.page()
             + "&size=" + paginationRequestDto.size()
@@ -214,8 +210,8 @@ public class MachineControllerTest {
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].id").value(1))
-        .andExpect(jsonPath("$.content[1].id").value(2));
+        .andExpect(jsonPath("$.data.content[0].id").value(1))
+        .andExpect(jsonPath("$.data.content[1].id").value(2));
   }
 
   @ParameterizedTest
@@ -235,35 +231,57 @@ public class MachineControllerTest {
         .andDo(print())
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.message").value("Invalid parameter"))
-        .andExpect(jsonPath("$.details").value(expectedMessage));
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
   }
 
   @Test
   void givenDefaultPagination_whenGetAllMachinesIsCalled_thenReturnStandardJsonFormat() throws Exception {
-    MachineDto mockMachine = getMachineDto(1L, "1", "Condominium 1", "Washer");
-    MachineDto mockMachine2 = getMachineDto(2L, "2", "Condominium 2", "Washer");
 
-    List<MachineDto> machines = List.of(mockMachine, mockMachine2);
-    Page<MachineDto> machinePage = new PageImpl<>(machines);
+    PaginationResponseDto<MachineDto> mockPaginationResponse = getMachineDtoPaginationResponseDto();
+
     when(machineService.getAllMachines(any(PaginationRequestDto.class)))
-        .thenReturn(machinePage);
+        .thenReturn(mockPaginationResponse);
 
     mockMvc.perform(get("/machine")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].id").value(1))
-        .andExpect(jsonPath("$.content[1].id").value(2))
-        .andExpect(jsonPath("$.pageable").exists())
-        .andExpect(jsonPath("$.last").isBoolean())
-        .andExpect(jsonPath("$.totalPages").isNumber())
-        .andExpect(jsonPath("$.totalElements").isNumber())
-        .andExpect(jsonPath("$.first").isBoolean())
-        .andExpect(jsonPath("$.numberOfElements").isNumber())
-        .andExpect(jsonPath("$.size").isNumber())
-        .andExpect(jsonPath("$.number").isNumber())
-        .andExpect(jsonPath("$.sort").exists())
-        .andExpect(jsonPath("$.empty").isBoolean());
+        .andExpect(jsonPath("$.success").isBoolean())
+        .andExpect(jsonPath("$.message").exists())
+        .andExpect(jsonPath("$.data.content[0].id").value(1))
+        .andExpect(jsonPath("$.data.content[1].id").value(2))
+        .andExpect(jsonPath("$.data.totalPages").isNumber())
+        .andExpect(jsonPath("$.data.totalElements").isNumber())
+        .andExpect(jsonPath("$.data.size").isNumber())
+        .andExpect(jsonPath("$.data.page").isNumber())
+        .andExpect(jsonPath("$.data.empty").isBoolean())
+        .andExpect(jsonPath("$.data.last").isBoolean())
+        .andExpect(jsonPath("$.data.first").isBoolean())
+        .andExpect(jsonPath("$.timestamp").exists());
+  }
+
+  private static MachineDto getMachineDto(Long id, String identifier, String condominium, String type) {
+    return MachineDto.builder()
+        .id(id)
+        .identifier(identifier)
+        .condominium(condominium)
+        .type(type)
+        .build();
+  }
+
+  private static PaginationResponseDto<MachineDto> getMachineDtoPaginationResponseDto() {
+    MachineDto mockMachineDto = getMachineDto(1L, "1", "Condominium 1", "Washer");
+    MachineDto mockMachineDto2 = getMachineDto(2L, "2", "Condominium 2", "Washer");
+    return PaginationResponseDto.<MachineDto>builder()
+        .content(List.of(mockMachineDto, mockMachineDto2))
+        .totalPages(1)
+        .totalElements(2)
+        .size(10)
+        .page(0)
+        .empty(false)
+        .last(true)
+        .first(true)
+        .build();
   }
 
   private static Stream<Arguments> provideStringsForIsNull() {
@@ -289,5 +307,4 @@ public class MachineControllerTest {
         Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
     );
   }
-
 }
