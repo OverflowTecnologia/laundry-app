@@ -196,7 +196,7 @@ public class MachineControllerTest {
     MachineDto mockMachine2 = getMachineDto(2L, "2", "Condominium 2", "Washer");
 
     PaginationRequestDto paginationRequestDto = PaginationRequestDto.builder()
-        .page(0)
+        .page(1)
         .size(10)
         .sortBy("id")
         .direction("DESC")
@@ -284,9 +284,9 @@ public class MachineControllerTest {
 
   public static Stream<Arguments> provideBrokenPaginationInfo() {
     return Stream.of(
-        Arguments.of(0, 10, "id", "INVALID", ObjectValidatorErrors.PAGINATION_DIRECTION_FORMAT_INVALID),
-        Arguments.of(-1, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
-        Arguments.of(0, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
+        Arguments.of(1, 10, "id", "INVALID", ObjectValidatorErrors.PAGINATION_DIRECTION_FORMAT_INVALID),
+        Arguments.of(0, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
+        Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
     );
   }
 

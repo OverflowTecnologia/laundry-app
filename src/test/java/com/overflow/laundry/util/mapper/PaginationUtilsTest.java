@@ -16,15 +16,16 @@ public class PaginationUtilsTest {
   void givenPaginationRequestDto_whenToPageable_thenReturnPageable() {
 
     PaginationRequestDto paginationRequestDto = PaginationRequestDto.builder()
-        .page(0)
+        .page(1)
         .size(10)
         .sortBy("id")
         .direction("DESC")
         .build();
 
-    Pageable mockPageable = PageRequest.of(paginationRequestDto.page(),
+    Pageable mockPageable = PageRequest.of(paginationRequestDto.page() - 1,
         paginationRequestDto.size(),
-        Sort.by(paginationRequestDto.direction(), paginationRequestDto.sortBy()));
+        Sort.Direction.valueOf(paginationRequestDto.direction()),
+        paginationRequestDto.sortBy());
 
     Pageable pageableReturned = PaginationUtils.toPageable(paginationRequestDto);
 

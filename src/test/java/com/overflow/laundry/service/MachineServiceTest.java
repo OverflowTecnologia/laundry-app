@@ -124,7 +124,7 @@ public class MachineServiceTest {
     List<Machine> machines = List.of(mockMachine);
     Page<Machine> machinePage = new PageImpl<>(machines);
     PaginationRequestDto defaultPagination = PaginationRequestDto.builder()
-        .page(0)
+        .page(1)
         .size(10)
         .sortBy("id")
         .direction("DESC")
