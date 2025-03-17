@@ -21,7 +21,7 @@ public class MachineRepositoryTest {
   private MachineRepository machineRepository;
 
   @Test
-  public void should_returnMachine_whenFindMachineByIdentifierIsCalled() {
+  void givenMachineIsSaved_whenFindMachineByIdentifierIsCalled_thenReturnMachine() {
     Machine machine = new Machine();
     machine.setIdentifier("Washing Machine");
     machine.setCondominium("Condominium");

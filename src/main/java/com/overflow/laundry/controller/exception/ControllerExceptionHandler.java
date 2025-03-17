@@ -49,6 +49,13 @@ public class ControllerExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+    ErrorResponse errorResponse = buildErrorResponse(ExceptionHandlerErrors.INVALID_PARAMETER,
+        List.of(ex.getMessage()), ex);
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  }
+
 
   private ErrorResponse buildErrorResponse(String message, List<String> detail, Exception ex) {
     String logHeader = LOG_PREFIX + "Error message:" + message;

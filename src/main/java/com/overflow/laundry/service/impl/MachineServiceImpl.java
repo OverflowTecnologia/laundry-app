@@ -3,15 +3,17 @@ package com.overflow.laundry.service.impl;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.MachineService;
+import com.overflow.laundry.util.PaginationUtils;
 import com.overflow.laundry.util.mapper.MachineMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class MachineServiceImpl implements MachineService {
@@ -58,10 +60,9 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public List<MachineDto> getAllMachines() {
-    List<Machine> allMachines = machineRepository.findAll();
-    return allMachines.stream()
-        .map(machineMapper::toDto)
-        .collect(Collectors.toList());
+  public Page<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
+    Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
+    Page<Machine> allMachines = machineRepository.findAll(pageable);
+    return allMachines.map(machineMapper::toDto);
   }
 }

@@ -3,6 +3,7 @@ package com.overflow.laundry.service;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.impl.MachineServiceImpl;
 import com.overflow.laundry.util.mapper.MachineMapper;
@@ -12,7 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -114,9 +119,20 @@ public class MachineServiceTest {
   }
 
   @Test
-  void should_returnAllMachines_whenGetAllMachinesIsCalled() {
-    machineService.getAllMachines();
-    verify(machineRepository, times(1)).findAll();
+  void given_defaultPagination_whenGetAllMachinesIsCalled_thenReturnAllMachines() {
+    Machine mockMachine = getMockMachine();
+    List<Machine> machines = List.of(mockMachine);
+    Page<Machine> machinePage = new PageImpl<>(machines);
+    PaginationRequestDto defaultPagination = PaginationRequestDto.builder()
+        .page(0)
+        .size(10)
+        .sortBy("id")
+        .direction("DESC")
+        .build();
+
+    when(machineRepository.findAll(any(Pageable.class))).thenReturn(machinePage);
+    machineService.getAllMachines(defaultPagination);
+    verify(machineRepository, times(1)).findAll(any(Pageable.class));
   }
 
   private static Machine getMockMachine() {

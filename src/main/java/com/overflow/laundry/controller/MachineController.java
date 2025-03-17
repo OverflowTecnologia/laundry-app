@@ -2,9 +2,10 @@ package com.overflow.laundry.controller;
 
 
 import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.service.MachineService;
 import jakarta.validation.Valid;
-import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -51,7 +53,14 @@ public class MachineController {
   }
 
   @GetMapping
-  public ResponseEntity<List<MachineDto>> getAllMachines() {
-    return ResponseEntity.ok(machineService.getAllMachines());
+  public Page<MachineDto> getAllMachines(@RequestParam(required = false) Integer page,
+                                         @RequestParam(required = false) Integer size,
+                                         @RequestParam(required = false) String sortBy,
+                                         @RequestParam(required = false) String direction) {
+
+    PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
+    Page<MachineDto> allMachines = machineService.getAllMachines(paginationRequest);
+    return allMachines;
+
   }
 }

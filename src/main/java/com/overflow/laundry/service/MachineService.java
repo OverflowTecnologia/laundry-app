@@ -1,8 +1,8 @@
 package com.overflow.laundry.service;
 
 import com.overflow.laundry.model.dto.MachineDto;
-
-import java.util.List;
+import com.overflow.laundry.model.dto.PaginationRequestDto;
+import org.springframework.data.domain.Page;
 
 public interface MachineService {
   MachineDto createMachine(MachineDto machineDto);
@@ -13,5 +13,5 @@ public interface MachineService {
 
   void deleteMachine(Long id);
 
-  List<MachineDto> getAllMachines();
+  Page<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto);
 }
