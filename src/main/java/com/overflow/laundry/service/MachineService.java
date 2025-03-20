@@ -14,4 +14,6 @@ public interface MachineService {
   void deleteMachine(Long id);
 
   PaginationResponseDto<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto);
+
+  MachineDto getMachineByIdentifier(String identifier);
 }

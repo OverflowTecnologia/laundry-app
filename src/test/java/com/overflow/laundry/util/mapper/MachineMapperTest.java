@@ -3,6 +3,7 @@ package com.overflow.laundry.util.mapper;
 
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.mapper.MachineMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

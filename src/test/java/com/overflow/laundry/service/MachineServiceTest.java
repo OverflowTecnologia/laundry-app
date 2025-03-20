@@ -1,12 +1,13 @@
 package com.overflow.laundry.service;
 
+import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.impl.MachineServiceImpl;
-import com.overflow.laundry.util.mapper.MachineMapper;
+import com.overflow.laundry.model.mapper.MachineMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,6 +59,19 @@ public class MachineServiceTest {
 
   }
 
+  @Test
+  void givenMachine_whenCreateMachineIsCalled_thenReturnMachineIdentifierAlreadyInUse() {
+    MachineDto machineDto = getMachineDto();
+    Machine machine = getMockMachine();
+
+    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.of(machine));
+
+    MachineIdentifierAlreadyInUseException exception = assertThrows(
+        MachineIdentifierAlreadyInUseException.class, () -> {
+          machineService.createMachine(machineDto);
+        });
+    assertEquals("Machine identifier already in use", exception.getMessage());
+  }
 
   @Test
   void givenMachineExists_whenGetMachineByIdIsCalled_thenReturnMachineDto() {
@@ -133,6 +147,25 @@ public class MachineServiceTest {
     when(machineRepository.findAll(any(Pageable.class))).thenReturn(machinePage);
     machineService.getAllMachines(defaultPagination);
     verify(machineRepository, times(1)).findAll(any(Pageable.class));
+  }
+
+  @Test
+  void givenMachineExists_whenGetMachineByIdentifierIsCalled_thenReturnMachineDto() {
+    Machine mockMachine = getMockMachine();
+    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.of(mockMachine));
+
+    MachineDto machineDto = getMachineDto();
+    MachineDto machineFound = machineService.getMachineByIdentifier("Washing Machine");
+
+    assertEquals(machineDto, machineFound);
+  }
+
+  @Test
+  void givenMachineDoesNotExist_whenGetMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
+    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.empty());
+    assertThrows(MachineNotFoundException.class, () -> {
+      machineService.getMachineByIdentifier("Washing Machine");
+    });
   }
 
   private static Machine getMockMachine() {

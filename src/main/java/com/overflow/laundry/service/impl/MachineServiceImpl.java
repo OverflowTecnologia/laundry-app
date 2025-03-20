@@ -1,5 +1,6 @@
 package com.overflow.laundry.service.impl;
 
+import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import com.overflow.laundry.model.dto.MachineDto;
@@ -8,7 +9,7 @@ import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.MachineService;
 import com.overflow.laundry.util.PaginationUtils;
-import com.overflow.laundry.util.mapper.MachineMapper;
+import com.overflow.laundry.model.mapper.MachineMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_NOT_FOUND;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
 
 @Service
 public class MachineServiceImpl implements MachineService {
@@ -31,6 +35,10 @@ public class MachineServiceImpl implements MachineService {
 
   @Override
   public MachineDto createMachine(MachineDto machineDto) {
+    machineRepository.findMachineByIdentifier(machineDto.identifier())
+        .ifPresent(machine -> {
+          throw new MachineIdentifierAlreadyInUseException(MACHINE_IDENTIFIER_ALREADY_IN_USE.label);
+        });
     Machine machine = machineMapper.toEntity(machineDto);
     return machineMapper.toDto(machineRepository.save(machine));
   }
@@ -39,7 +47,7 @@ public class MachineServiceImpl implements MachineService {
   public MachineDto getMachineById(Long id) {
     Optional<Machine> machine = machineRepository.findById(id);
     if (machine.isEmpty()) {
-      throw new MachineNotFoundException("Machine not found");
+      throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
     }
     return machineMapper.toDto(machine.get());
   }
@@ -47,7 +55,7 @@ public class MachineServiceImpl implements MachineService {
   @Override
   public MachineDto updateMachine(MachineDto machineDto) {
     if (!machineRepository.existsById(machineDto.id())) {
-      throw new MachineNotFoundException("Machine not found");
+      throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
     }
     Machine machine = machineMapper.toEntity(machineDto);
     return machineMapper.toDto(machineRepository.save(machine));
@@ -56,7 +64,7 @@ public class MachineServiceImpl implements MachineService {
   @Override
   public void deleteMachine(Long id) {
     if (!machineRepository.existsById(id)) {
-      throw new MachineNotFoundException("Machine not found");
+      throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
     }
     machineRepository.deleteById(id);
   }
@@ -76,5 +84,13 @@ public class MachineServiceImpl implements MachineService {
         .last(allMachines.isLast())
         .first(allMachines.isFirst())
         .build();
+  }
+
+  @Override
+  public MachineDto getMachineByIdentifier(String identifier) {
+
+    Optional<Machine> machine = Optional.of(machineRepository.findMachineByIdentifier(identifier)
+        .orElseThrow(() -> new MachineNotFoundException(MACHINE_NOT_FOUND.label)));
+    return machineMapper.toDto(machine.get());
   }
 }

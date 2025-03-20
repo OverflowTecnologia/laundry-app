@@ -3,6 +3,7 @@ package com.overflow.laundry.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.overflow.laundry.constant.ObjectValidatorErrors;
+import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
@@ -98,10 +99,8 @@ public class MachineControllerTest {
 
     when(machineService.getMachineById(any())).thenReturn(mockMachine);
 
-    String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(get("/machine/1")
-            .contentType("application/json")
-            .content(machineJson))
+            .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk());
   }
@@ -119,10 +118,58 @@ public class MachineControllerTest {
   @Test
   void givenInvalidMachineId_whenGetMachineById_thenReturnBadRequest() throws Exception {
 
-    mockMvc.perform(get("/machine/adas")
+    mockMvc.perform(get("/machine/foo")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenMachineExists_whenGetMachineByIdentifier_thenReturnMachine() throws Exception {
+    MachineDto mockMachine = getMachineDto(1L, "machine-identifier", "Condominium 1", "Washer");
+
+    when(machineService.getMachineByIdentifier(any())).thenReturn(mockMachine);
+
+    mockMvc.perform(get("/machine/identifier/machine-identifier")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.id").value(1))
+        .andExpect(jsonPath("$.data.identifier").value("machine-identifier"));
+  }
+
+  @Test
+  void givenMachineDoesNotExists_whenGetMachineByIdentifier_thenReturnMachineNotFoundException() throws Exception {
+
+    String expectedMessage = "Machine not found with the provided identifier";
+    when(machineService.getMachineByIdentifier(any())).thenThrow(
+        new MachineNotFoundException(expectedMessage));
+    mockMvc.perform(get("/machine/identifier/machine-identifier")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Machine not found"))
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
+  }
+
+  @Test
+  void givenIdentifierIsEmpty_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
+
+    mockMvc.perform(get("/machine/identifier/   ")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+
+  }
+
+  @Test
+  void givenIdentifierIsNull_whenGetMachineByIdentifier_thenReturnNotFound() throws Exception {
+
+    mockMvc.perform(get("/machine/identifier/")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isNotFound());
+
   }
 
   @Test
@@ -258,6 +305,32 @@ public class MachineControllerTest {
         .andExpect(jsonPath("$.data.last").isBoolean())
         .andExpect(jsonPath("$.data.first").isBoolean())
         .andExpect(jsonPath("$.timestamp").exists());
+  }
+
+  @Test
+  void givenNothing_whenCallingMachineEndpoint_thenThrowInternalServerError() throws Exception {
+
+    when(machineService.getMachineById(any())).thenThrow(RuntimeException.class);
+    mockMvc.perform(get("/machine/1")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  void givenMachine_whenMachineIsCreated_thenReturnMachineIdentifierAlreadyInUse() throws Exception {
+    MachineDto mockMachine = getMachineDto(null, "Washer 1", "Condominium 1", "Washer");
+
+    when(machineService.createMachine(any(MachineDto.class))).thenThrow(new MachineIdentifierAlreadyInUseException(
+        "Machine identifier already in use"));
+
+    String machineJson = objectMapper.writeValueAsString(mockMachine);
+    mockMvc.perform(post("/machine")
+            .contentType("application/json")
+            .content(machineJson))
+        .andDo(print())
+        .andExpect(status().isConflict());
+
   }
 
   private static MachineDto getMachineDto(Long id, String identifier, String condominium, String type) {

@@ -1,6 +1,5 @@
 package com.overflow.laundry.repository;
 
-import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Machine;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +7,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @DataJpaTest
@@ -28,15 +28,14 @@ public class MachineRepositoryTest {
     machine.setType("Washer");
 
     machineRepository.save(machine);
-    Machine foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
-    assertEquals(machine, foundMachine);
+    Optional<Machine> foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
+    assertEquals(machine, foundMachine.orElse(null));
   }
 
   @Test
-  void givenNothing_whenFindMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
-    assertThrows(MachineNotFoundException.class, () -> {
-      machineRepository.findMachineByIdentifier("Washing Machine");
-    });
+  void givenMachineDoesNotExists_whenFindMachineByIdentifierIsCalled_thenReturnEmptyOptional() {
+    Optional<Machine> foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
+    assertEquals(Optional.empty(), foundMachine);
   }
 
 }

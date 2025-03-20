@@ -7,6 +7,7 @@ import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_CREATED;
-import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_DELETED;
-import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_FOUND;
-import static com.overflow.laundry.util.MessageResponseEnum.MACHINE_UPDATED;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_CREATED;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_DELETED;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_FOUND;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_UPDATED;
 
 
 @RestController
@@ -57,6 +58,13 @@ public class MachineController {
   public ResponseEntity<StandardResponse<String>> deleteMachine(@PathVariable Long id) {
     machineService.deleteMachine(id);
     return StandardResponse.success(MACHINE_DELETED, "");
+  }
+
+  @GetMapping("/identifier/{identifier}")
+  public ResponseEntity<StandardResponse<MachineDto>> getMachineByIdentifier(
+      @PathVariable @NotBlank String identifier) {
+    MachineDto machine = machineService.getMachineByIdentifier(identifier);
+    return StandardResponse.success(MACHINE_FOUND, machine);
   }
 
   @GetMapping
