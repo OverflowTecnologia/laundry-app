@@ -56,7 +56,7 @@ public class MachineControllerTest {
     when(machineService.createMachine(any(MachineDto.class))).thenReturn(mockMachine);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
-    mockMvc.perform(post("/machine")
+    mockMvc.perform(post("/machines")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -71,7 +71,7 @@ public class MachineControllerTest {
     MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
-    mockMvc.perform(post("/machine")
+    mockMvc.perform(post("/machines")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -86,7 +86,7 @@ public class MachineControllerTest {
     MachineDto mockMachine = getMachineDto(null, identifier, condominium, type);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
-    mockMvc.perform(post("/machine")
+    mockMvc.perform(post("/machines")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -99,7 +99,7 @@ public class MachineControllerTest {
 
     when(machineService.getMachineById(any())).thenReturn(mockMachine);
 
-    mockMvc.perform(get("/machine/1")
+    mockMvc.perform(get("/machines/1")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk());
@@ -109,7 +109,7 @@ public class MachineControllerTest {
   void givenMachineDoesNotExist_whenGetMachineById_thenReturnMachineNotFoundException() throws Exception {
 
     when(machineService.getMachineById(any())).thenThrow(MachineNotFoundException.class);
-    mockMvc.perform(get("/machine/1")
+    mockMvc.perform(get("/machines/1")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound());
@@ -118,7 +118,7 @@ public class MachineControllerTest {
   @Test
   void givenInvalidMachineId_whenGetMachineById_thenReturnBadRequest() throws Exception {
 
-    mockMvc.perform(get("/machine/foo")
+    mockMvc.perform(get("/machines/foo")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest());
@@ -130,7 +130,7 @@ public class MachineControllerTest {
 
     when(machineService.getMachineByIdentifier(any())).thenReturn(mockMachine);
 
-    mockMvc.perform(get("/machine/identifier/machine-identifier")
+    mockMvc.perform(get("/machines/identifier/machine-identifier")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -144,7 +144,7 @@ public class MachineControllerTest {
     String expectedMessage = "Machine not found with the provided identifier";
     when(machineService.getMachineByIdentifier(any())).thenThrow(
         new MachineNotFoundException(expectedMessage));
-    mockMvc.perform(get("/machine/identifier/machine-identifier")
+    mockMvc.perform(get("/machines/identifier/machine-identifier")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound())
@@ -155,7 +155,7 @@ public class MachineControllerTest {
   @Test
   void givenIdentifierIsEmpty_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
 
-    mockMvc.perform(get("/machine/identifier/   ")
+    mockMvc.perform(get("/machines/identifier/   ")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest());
@@ -165,7 +165,7 @@ public class MachineControllerTest {
   @Test
   void givenIdentifierIsNull_whenGetMachineByIdentifier_thenReturnNotFound() throws Exception {
 
-    mockMvc.perform(get("/machine/identifier/")
+    mockMvc.perform(get("/machines/identifier/")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound());
@@ -179,7 +179,7 @@ public class MachineControllerTest {
     when(machineService.updateMachine(any(MachineDto.class))).thenReturn(mockMachine);
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
-    mockMvc.perform(put("/machine")
+    mockMvc.perform(put("/machines")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -190,7 +190,7 @@ public class MachineControllerTest {
   void givenMachine_whenMachineIsDeleted_thenShouldDeleteMachine() throws Exception {
 
     doNothing().when(machineService).deleteMachine(1L);
-    mockMvc.perform(delete("/machine/1")
+    mockMvc.perform(delete("/machines/1")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNoContent());
@@ -212,7 +212,7 @@ public class MachineControllerTest {
         .build();
 
     when(machineService.getAllMachines(any())).thenReturn(mockPaginationResponse);
-    mockMvc.perform(get("/machine")
+    mockMvc.perform(get("/machines")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -227,7 +227,7 @@ public class MachineControllerTest {
     when(machineService.getAllMachines(any(PaginationRequestDto.class)))
         .thenReturn(mockPaginationResponse);
 
-    mockMvc.perform(get("/machine")
+    mockMvc.perform(get("/machines")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -250,7 +250,7 @@ public class MachineControllerTest {
     when(machineService.getAllMachines(paginationRequestDto))
         .thenReturn(mockPaginationResponse);
 
-    mockMvc.perform(get("/machine?page=" + paginationRequestDto.page()
+    mockMvc.perform(get("/machines?page=" + paginationRequestDto.page()
             + "&size=" + paginationRequestDto.size()
             + "&sortBy=" + paginationRequestDto.sortBy()
             + "&direction=" + paginationRequestDto.direction())
@@ -270,7 +270,7 @@ public class MachineControllerTest {
                                                                                             String expectedMessage)
       throws Exception {
 
-    mockMvc.perform(get("/machine?page=" + size
+    mockMvc.perform(get("/machines?page=" + size
             + "&size=" + page
             + "&sortBy=" + sortBy
             + "&direction=" + direction)
@@ -289,7 +289,7 @@ public class MachineControllerTest {
     when(machineService.getAllMachines(any(PaginationRequestDto.class)))
         .thenReturn(mockPaginationResponse);
 
-    mockMvc.perform(get("/machine")
+    mockMvc.perform(get("/machines")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -311,7 +311,7 @@ public class MachineControllerTest {
   void givenNothing_whenCallingMachineEndpoint_thenThrowInternalServerError() throws Exception {
 
     when(machineService.getMachineById(any())).thenThrow(RuntimeException.class);
-    mockMvc.perform(get("/machine/1")
+    mockMvc.perform(get("/machines/1")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isInternalServerError());
@@ -325,7 +325,7 @@ public class MachineControllerTest {
         "Machine identifier already in use"));
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
-    mockMvc.perform(post("/machine")
+    mockMvc.perform(post("/machines")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())

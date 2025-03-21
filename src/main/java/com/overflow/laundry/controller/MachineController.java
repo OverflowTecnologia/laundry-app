@@ -26,7 +26,7 @@ import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageRespons
 
 
 @RestController
-@RequestMapping("/machine")
+@RequestMapping("/machines")
 public class MachineController {
 
   private final MachineService machineService;
