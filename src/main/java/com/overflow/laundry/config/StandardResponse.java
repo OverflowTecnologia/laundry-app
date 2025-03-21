@@ -1,6 +1,6 @@
 package com.overflow.laundry.config;
 
-import com.overflow.laundry.constant.ObjectValidatorErrors;
+import com.overflow.laundry.constant.MessageResponseEnum;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 
@@ -22,14 +22,14 @@ public class StandardResponse<T> {
   }
 
   public static <T> ResponseEntity<StandardResponse<T>> success(
-      ObjectValidatorErrors.MessageResponseEnum message, T data) {
+      MessageResponseEnum message, T data) {
     return ResponseEntity
         .status(message.status)
         .body(new StandardResponse<>(true, message.label, data));
   }
 
   public static <T> ResponseEntity<StandardResponse<T>> error(
-      ObjectValidatorErrors.MessageResponseEnum message, T data) {
+      MessageResponseEnum message, T data) {
     return ResponseEntity
         .status(message.status)
         .body(new StandardResponse<>(false, message.label, data));

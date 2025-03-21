@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_CREATED;
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_DELETED;
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_FOUND;
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_UPDATED;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_CREATED;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_DELETED;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_FOUND;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_UPDATED;
 
 
 @RestController

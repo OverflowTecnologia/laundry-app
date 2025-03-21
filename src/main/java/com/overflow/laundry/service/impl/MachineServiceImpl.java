@@ -18,8 +18,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_NOT_FOUND;
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUND;
+
 
 @Service
 public class MachineServiceImpl implements MachineService {

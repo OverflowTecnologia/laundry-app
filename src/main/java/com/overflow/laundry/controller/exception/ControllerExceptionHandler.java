@@ -1,7 +1,6 @@
 package com.overflow.laundry.controller.exception;
 
 import com.overflow.laundry.config.StandardResponse;
-import com.overflow.laundry.constant.ObjectValidatorErrors;
 import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.exception.StandardErrorMessage;
@@ -16,8 +15,12 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.BAD_REQUEST;
-import static com.overflow.laundry.constant.ObjectValidatorErrors.MessageResponseEnum.MACHINE_NOT_FOUND;
+import static com.overflow.laundry.constant.MessageResponseEnum.BAD_REQUEST;
+import static com.overflow.laundry.constant.MessageResponseEnum.INTERNAL_SERVER_ERROR;
+import static com.overflow.laundry.constant.MessageResponseEnum.INVALID_PARAMETER;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
+import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUND;
+import static com.overflow.laundry.constant.MessageResponseEnum.NOT_FOUND;
 
 
 @RestControllerAdvice
@@ -31,14 +34,14 @@ public class ControllerExceptionHandler {
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleAllExceptions(
       Exception ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(ObjectValidatorErrors.MessageResponseEnum.INTERNAL_SERVER_ERROR, message);
+    return StandardResponse.error(INTERNAL_SERVER_ERROR, message);
   }
 
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleNoResourceFoundException(
       NoResourceFoundException ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(ObjectValidatorErrors.MessageResponseEnum.NOT_FOUND, message);
+    return StandardResponse.error(NOT_FOUND, message);
   }
 
 
@@ -74,7 +77,7 @@ public class ControllerExceptionHandler {
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleIllegalArgumentException(
       IllegalArgumentException ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(ObjectValidatorErrors.MessageResponseEnum.INVALID_PARAMETER, message);
+    return StandardResponse.error(INVALID_PARAMETER, message);
 
   }
 
@@ -82,7 +85,7 @@ public class ControllerExceptionHandler {
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleHandlerMethodValidationException(
       HandlerMethodValidationException ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(ObjectValidatorErrors.MessageResponseEnum.INVALID_PARAMETER, message);
+    return StandardResponse.error(INVALID_PARAMETER, message);
   }
 
 
@@ -90,7 +93,7 @@ public class ControllerExceptionHandler {
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMachineIdentifierAlreadyInUseException(
       MachineIdentifierAlreadyInUseException ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(ObjectValidatorErrors.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE, message);
+    return StandardResponse.error(MACHINE_IDENTIFIER_ALREADY_IN_USE, message);
   }
 
   private static StandardErrorMessage getStandardErrorMessage(Exception ex, WebRequest request) {
