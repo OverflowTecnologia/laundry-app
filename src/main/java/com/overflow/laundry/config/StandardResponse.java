@@ -32,6 +32,6 @@ public class StandardResponse<T> {
       MessageResponseEnum message, T data) {
     return ResponseEntity
         .status(message.status)
-        .body(new StandardResponse<>(false, message.label, data));
+        .body(new StandardResponse<>(false, message.status.getReasonPhrase(), data));
   }
 }

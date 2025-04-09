@@ -9,6 +9,7 @@ import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,6 +51,15 @@ public class MachineControllerTest {
   @MockitoBean
   private MachineService machineService;
 
+  @MockitoBean
+  JwtDecoder jwtDecoder;
+
+  @BeforeEach
+  void setUpTestToken() {
+    mockTestJwtToken();
+  }
+
+
   @Test
   void givenMockedMachine_whenMachineIsCreated_thenReturnCreated() throws Exception {
 
@@ -57,6 +69,7 @@ public class MachineControllerTest {
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(post("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -72,6 +85,7 @@ public class MachineControllerTest {
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(post("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -87,6 +101,7 @@ public class MachineControllerTest {
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(post("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -100,6 +115,7 @@ public class MachineControllerTest {
     when(machineService.getMachineById(any())).thenReturn(mockMachine);
 
     mockMvc.perform(get("/machines/1")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk());
@@ -110,6 +126,7 @@ public class MachineControllerTest {
 
     when(machineService.getMachineById(any())).thenThrow(MachineNotFoundException.class);
     mockMvc.perform(get("/machines/1")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound());
@@ -119,6 +136,7 @@ public class MachineControllerTest {
   void givenInvalidMachineId_whenGetMachineById_thenReturnBadRequest() throws Exception {
 
     mockMvc.perform(get("/machines/foo")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest());
@@ -131,6 +149,7 @@ public class MachineControllerTest {
     when(machineService.getMachineByIdentifier(any())).thenReturn(mockMachine);
 
     mockMvc.perform(get("/machines/identifier/machine-identifier")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -145,10 +164,11 @@ public class MachineControllerTest {
     when(machineService.getMachineByIdentifier(any())).thenThrow(
         new MachineNotFoundException(expectedMessage));
     mockMvc.perform(get("/machines/identifier/machine-identifier")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.message").value("Machine not found"))
+        .andExpect(jsonPath("$.message").value("Not Found"))
         .andExpect(jsonPath("$.data.details").value(expectedMessage));
   }
 
@@ -156,6 +176,7 @@ public class MachineControllerTest {
   void givenIdentifierIsEmpty_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
 
     mockMvc.perform(get("/machines/identifier/   ")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest());
@@ -166,6 +187,7 @@ public class MachineControllerTest {
   void givenIdentifierIsNull_whenGetMachineByIdentifier_thenReturnNotFound() throws Exception {
 
     mockMvc.perform(get("/machines/identifier/")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNotFound());
@@ -180,6 +202,7 @@ public class MachineControllerTest {
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(put("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -191,6 +214,7 @@ public class MachineControllerTest {
 
     doNothing().when(machineService).deleteMachine(1L);
     mockMvc.perform(delete("/machines/1")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isNoContent());
@@ -213,6 +237,7 @@ public class MachineControllerTest {
 
     when(machineService.getAllMachines(any())).thenReturn(mockPaginationResponse);
     mockMvc.perform(get("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -228,6 +253,7 @@ public class MachineControllerTest {
         .thenReturn(mockPaginationResponse);
 
     mockMvc.perform(get("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -246,7 +272,6 @@ public class MachineControllerTest {
         .direction("DESC")
         .build();
 
-
     when(machineService.getAllMachines(paginationRequestDto))
         .thenReturn(mockPaginationResponse);
 
@@ -254,6 +279,7 @@ public class MachineControllerTest {
             + "&size=" + paginationRequestDto.size()
             + "&sortBy=" + paginationRequestDto.sortBy()
             + "&direction=" + paginationRequestDto.direction())
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -274,10 +300,11 @@ public class MachineControllerTest {
             + "&size=" + page
             + "&sortBy=" + sortBy
             + "&direction=" + direction)
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Invalid parameter"))
+        .andExpect(jsonPath("$.message").value("Bad Request"))
         .andExpect(jsonPath("$.data.details").value(expectedMessage));
   }
 
@@ -290,6 +317,7 @@ public class MachineControllerTest {
         .thenReturn(mockPaginationResponse);
 
     mockMvc.perform(get("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -312,6 +340,7 @@ public class MachineControllerTest {
 
     when(machineService.getMachineById(any())).thenThrow(RuntimeException.class);
     mockMvc.perform(get("/machines/1")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
         .andExpect(status().isInternalServerError());
@@ -326,6 +355,7 @@ public class MachineControllerTest {
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(post("/machines")
+            .header("Authorization", "Bearer test_token")
             .contentType("application/json")
             .content(machineJson))
         .andDo(print())
@@ -379,5 +409,13 @@ public class MachineControllerTest {
         Arguments.of(0, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
         Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
     );
+  }
+
+  private void mockTestJwtToken() {
+    Jwt mockjwt = Jwt.withTokenValue("test_token")
+        .header("alg", "none")
+        .claim("sub", "test_user")
+        .build();
+    when(jwtDecoder.decode("test_token")).thenReturn(mockjwt);
   }
 }
