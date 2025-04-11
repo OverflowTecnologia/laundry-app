@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [aws-ec2]
+    runs-on: self-hosted
     steps:
       - name: Pull image from docker hub
         run: sudo docker pull jorgemaceulevicius94/laundry-app:latest
