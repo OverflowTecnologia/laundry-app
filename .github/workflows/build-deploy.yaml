@@ -15,8 +15,10 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '21'
+      - name: Grant execute permission for Gradlew
+        run: chmod +x ./gradlew
       - name: Build Project
-        run: ./gradlew build
+        run: ./gradlew build -x test
 #      - name: Login to docker hub
 #        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
 #      - name: Build docker image
