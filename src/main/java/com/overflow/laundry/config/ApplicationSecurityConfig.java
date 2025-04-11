@@ -20,7 +20,8 @@ public class ApplicationSecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
         .authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/machines/**").hasRole("MANAGER"));
+        .requestMatchers("/machines/**").hasRole("MANAGER")
+        .requestMatchers("/dummy").permitAll());
     http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
         jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
     http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
