@@ -3,6 +3,7 @@ package com.overflow.laundry.config;
 import com.overflow.laundry.exception.CustomAccessDeniedHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,7 +17,7 @@ public class ApplicationSecurityConfig {
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
     jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
     http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .csrf(csrf -> csrf.ignoringRequestMatchers("/machines/**"))
+        .csrf(AbstractHttpConfigurer::disable)
         .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
         .authorizeHttpRequests((requests) -> requests
         .requestMatchers("/machines/**").hasRole("MANAGER"));
@@ -25,5 +26,4 @@ public class ApplicationSecurityConfig {
     http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
     return http.build();
   }
-
 }

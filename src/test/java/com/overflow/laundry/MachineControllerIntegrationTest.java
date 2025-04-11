@@ -92,8 +92,6 @@ public class MachineControllerIntegrationTest {
         new ParameterizedTypeReference<StandardResponse<MachineDto>>() {
         });
 
-    new HttpEntity<>(machineDto);
-
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody().getData().id()).isNotNull();
     assertThat(response.getBody().getData().identifier()).isEqualTo(machineDto.identifier());
