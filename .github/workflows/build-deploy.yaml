@@ -18,13 +18,13 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
       - name: Build Project
-        run: ./gradlew build -x test
-#      - name: Login to docker hub
-#        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
-#      - name: Build docker image
-#        run: docker build -t integrationninjas/springboot-example .
-#      - name: Publish image to docker hub
-#        run: docker push integrationninjas/springboot-example:latest
+        run: ./gradlew build
+      - name: Login to docker hub
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+      - name: Build docker image
+        run: docker build -t jorgemaceulevicius94/laundry-app:latest .
+      - name: Publish image to docker hub
+        run: docker push jorgemaceulevicius94/laundry-app:latest
 #
 #  deploy:
 #    needs: build
