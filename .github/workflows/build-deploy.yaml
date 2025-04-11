@@ -24,15 +24,15 @@ jobs:
       - name: Build docker image
         run: docker build -t jorgemaceulevicius94/laundry-app:latest .
       - name: Publish image to docker hub
-        run: docker push jorgemaceulevicius94/laundry-app:latest
-#
-#  deploy:
-#    needs: build
-#    runs-on: [aws-ec2]
-#    steps:
-#      - name: Pull image from docker hub
-#        run: docker pull danieleleaoe/deploy_ghactions:latest
-#      - name: Remove docker container
-#        run: docker rm -f deploy_ghactions
-#      - name: Run docker container
-#        run: docker run -d -p 8080:8080 -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} -e DATABASE_PASSWORD='${{secrets.DATABASE_PASSWORD}}' -e DATABASE_URL=${{secrets.DATABASE_URL}} --name deploy_ghactions danieleleaoe/deploy_ghactions
+        run: docker push jorgemaceulevicius94/laundry-app:latest #change tag to github sha
+
+  deploy:
+    needs: build
+    runs-on: [aws-ec2]
+    steps:
+      - name: Pull image from docker hub
+        run: sudo docker pull jorgemaceulevicius94/laundry-app:latest
+      - name: Remove docker container
+        run: sudo docker rm -f laundry-app
+      - name: Run docker container
+        run: sudo docker run -d -p 8080:8080 -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} -e DATABASE_PASSWORD='${{secrets.DATABASE_PASSWORD}}' -e DATABASE_URL=${{secrets.DATABASE_URL}} --name laundry-app jorgemaceulevicius94/laundry-app
