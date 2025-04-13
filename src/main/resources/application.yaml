@@ -14,7 +14,7 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          jwk-set-uri: ${AWS_COGNITO_URI}
+          jwk-set-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_kM3pqO7tq/.well-known/jwks.json
 
 logging:
   level:
