@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DummyController {
 
-  @GetMapping("/dummy")
+  @GetMapping("/")
   public String dummyEndpoint() {
     return "This is a dummy endpoint";
   }
