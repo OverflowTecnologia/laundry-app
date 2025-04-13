@@ -19,8 +19,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -62,7 +62,7 @@ public class MachineControllerIntegrationTest {
     Jwt mockjwt = Jwt.withTokenValue("test_token")
         .header("alg", "none")
         .claim("sub", "test_user")
-        .claim("realm_access", null)
+        .claim("cognito:groups", null)
         .build();
     when(jwtDecoder.decode("test_token")).thenReturn(mockjwt);
 
@@ -128,7 +128,7 @@ public class MachineControllerIntegrationTest {
     Jwt mockjwt = Jwt.withTokenValue("test_token")
         .header("alg", "none")
         .claim("sub", "test_user")
-        .claim("realm_access", Map.of("roles", List.of("MANAGER")))
+        .claim("cognito:groups", new ArrayList<>(List.of("laundry-manager")))
         .build();
     when(jwtDecoder.decode("test_token")).thenReturn(mockjwt);
   }

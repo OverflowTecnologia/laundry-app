@@ -15,16 +15,16 @@ public class ApplicationSecurityConfig {
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new CognitoRoleConverter());
     http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .csrf(AbstractHttpConfigurer::disable)
-        .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
         .authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/machines/**").hasRole("MANAGER")
+        .requestMatchers("/machines/**").hasRole("laundry-manager")
         .requestMatchers("/").permitAll());
     http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
         jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
     http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
     return http.build();
   }
+
 }

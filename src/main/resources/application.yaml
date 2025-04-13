@@ -14,7 +14,7 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          jwk-set-uri: http://localhost:8180/realms/laundrydev/protocol/openid-connect/certs # KeyCloack
+          jwk-set-uri: ${AWS_COGNITO_URI}
 
 logging:
   level:
