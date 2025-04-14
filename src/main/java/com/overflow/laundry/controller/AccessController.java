@@ -11,8 +11,8 @@ public class AccessController {
     return "This is a home endpoint";
   }
 
-  @GetMapping("/logout")
-  public String logoutEndpoint() {
+  @GetMapping("/farewell")
+  public String farewellEndpoint() {
     return "See you next time!";
   }
 }

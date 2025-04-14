@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationSecurityConfig {
 
   String[] whitelistEndpoints = {
-      "/home", "/logout"
+      "/farewell", "/home"
   };
   String[] protectedEndpoints = {
       "/machines/**"
