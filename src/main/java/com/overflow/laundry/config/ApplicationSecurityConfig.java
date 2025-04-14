@@ -9,8 +9,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Component;
 
+
 @Component
 public class ApplicationSecurityConfig {
+
+  String[] whitelistEndpoints = {
+      "/home", "/logout"
+  };
+  String[] protectedEndpoints = {
+      "/machines/**"
+  };
 
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -19,8 +27,8 @@ public class ApplicationSecurityConfig {
     http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/machines/**").hasRole("laundry-manager")
-        .requestMatchers("/").permitAll());
+        .requestMatchers(protectedEndpoints).hasRole("laundry-manager")
+        .requestMatchers(whitelistEndpoints).permitAll());
     http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer ->
         jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
     http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
