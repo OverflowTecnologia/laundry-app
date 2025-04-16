@@ -1,7 +1,8 @@
 package com.overflow.laundry;
 
 import com.overflow.laundry.config.StandardResponse;
-import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.MachineRequestDto;
+import com.overflow.laundry.model.dto.MachineResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +50,9 @@ public class MachineControllerIntegrationTest {
   @Test
   void givenNoToken_whenGetMachineByIdentifier_thenReturnUnauthorized() {
     HttpEntity<Object> requestEntity = new HttpEntity<>(null, new HttpHeaders());
-    ResponseEntity<StandardResponse<MachineDto>> response = restTemplate.exchange(
+    ResponseEntity<StandardResponse<MachineResponseDto>> response = restTemplate.exchange(
         "http://localhost:" + port + "/machines/identifier/test-identifier",
-        GET, requestEntity, new ParameterizedTypeReference<StandardResponse<MachineDto>>() {
+        GET, requestEntity, new ParameterizedTypeReference<StandardResponse<MachineResponseDto>>() {
         });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -68,9 +69,9 @@ public class MachineControllerIntegrationTest {
 
     HttpEntity<Object> requestEntityWithDefaultHeaders = createRequestEntityWithDefaultHeaders(null);
 
-    ResponseEntity<StandardResponse<MachineDto>> response = restTemplate.exchange(
+    ResponseEntity<StandardResponse<MachineResponseDto>> response = restTemplate.exchange(
         "http://localhost:" + port + "/machines/identifier/test-identifier",
-        GET, requestEntityWithDefaultHeaders, new ParameterizedTypeReference<StandardResponse<MachineDto>>() {
+        GET, requestEntityWithDefaultHeaders, new ParameterizedTypeReference<StandardResponse<MachineResponseDto>>() {
         });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -79,24 +80,25 @@ public class MachineControllerIntegrationTest {
   @Test
   public void givenMachine_whenCreateMachine_thenReturnMachineCreated() {
 
-    MachineDto machineDto = MachineDto.builder()
+    MachineRequestDto machineRequestDto = MachineRequestDto.builder()
         .identifier("identifier")
-        .condominium("test-condominium")
+        .condominiumId(1L)
         .type("test-type")
         .build();
 
-    HttpEntity<MachineDto> requestEntity = createRequestEntityWithDefaultHeaders(machineDto);
+    HttpEntity<MachineRequestDto> requestEntity = createRequestEntityWithDefaultHeaders(machineRequestDto);
 
-    ResponseEntity<StandardResponse<MachineDto>> response = restTemplate.exchange(
+    ResponseEntity<StandardResponse<MachineResponseDto>> response = restTemplate.exchange(
         "http://localhost:" + port + "/machines", POST, requestEntity,
-        new ParameterizedTypeReference<StandardResponse<MachineDto>>() {
+        new ParameterizedTypeReference<StandardResponse<MachineResponseDto>>() {
         });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().getData().id()).isNotNull();
-    assertThat(response.getBody().getData().identifier()).isEqualTo(machineDto.identifier());
-    assertThat(response.getBody().getData().type()).isEqualTo(machineDto.type());
-    assertThat(response.getBody().getData().condominium()).isEqualTo(machineDto.condominium());
+    assertThat(response.getBody().getData().identifier()).isEqualTo(machineRequestDto.identifier());
+    assertThat(response.getBody().getData().type()).isEqualTo(machineRequestDto.type());
+    assertThat(response.getBody().getData().condominium().id()).isEqualTo(machineRequestDto.condominiumId());
   }
 
   @Test
@@ -105,13 +107,18 @@ public class MachineControllerIntegrationTest {
 
     HttpEntity<Object> requestEntityWithDefaultHeaders = createRequestEntityWithDefaultHeaders(null);
 
-    ResponseEntity<StandardResponse<MachineDto>> response = restTemplate.exchange(
+    ResponseEntity<StandardResponse<MachineResponseDto>> response = restTemplate.exchange(
         "http://localhost:" + port + "/machines/identifier/" + identifier,
-        GET, requestEntityWithDefaultHeaders, new ParameterizedTypeReference<StandardResponse<MachineDto>>() {
+        GET, requestEntityWithDefaultHeaders, new ParameterizedTypeReference<StandardResponse<MachineResponseDto>>() {
         });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().getData().identifier()).isEqualTo(identifier);
+    assertThat(response.getBody().getData().id()).isNotNull();
+    assertThat(response.getBody().getData().type()).isEqualTo("Washer");
+    assertThat(response.getBody().getData().condominium().id()).isEqualTo(1L);
+
   }
 
   private <T> HttpEntity<T> createRequestEntityWithDefaultHeaders(T body) {

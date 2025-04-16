@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -50,11 +51,11 @@ public class PaginationUtilsTest {
     when(mockPage.isEmpty()).thenReturn(false);
     when(mockPage.isLast()).thenReturn(false);
     when(mockPage.isFirst()).thenReturn(false);
-    when(mockPage.stream()).thenReturn(List.of("item1", "item2").stream());
+    when(mockPage.stream()).thenReturn(Stream.of("item1", "item2"));
 
     Function<String, String> mapper = Function.identity();
 
-    PaginationResponseDto<String> responseDto = PaginationUtils.toPaginationResponse(mockPage, mapper);
+    PaginationResponseDto responseDto = PaginationUtils.toPaginationResponse(mockPage, mapper);
 
     assertEquals(5, responseDto.totalPages());
     assertEquals(50L, responseDto.totalElements());

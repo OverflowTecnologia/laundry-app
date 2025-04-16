@@ -87,6 +87,13 @@ public class ControllerExceptionHandler {
     return StandardResponse.error(MACHINE_IDENTIFIER_ALREADY_IN_USE, message);
   }
 
+  @ExceptionHandler(CondominiumNotFoundException.class)
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleCondominiumNotFoundException(
+      CondominiumNotFoundException ex, WebRequest request) {
+    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+    return StandardResponse.error(NOT_FOUND, message);
+  }
+
   private static StandardErrorMessage getStandardErrorMessage(Exception ex, WebRequest request) {
     String messageDetail = ex.getLocalizedMessage();
     logWarn(messageDetail, ex);

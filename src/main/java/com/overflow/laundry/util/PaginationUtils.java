@@ -1,6 +1,5 @@
 package com.overflow.laundry.util;
 
-import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import lombok.AccessLevel;

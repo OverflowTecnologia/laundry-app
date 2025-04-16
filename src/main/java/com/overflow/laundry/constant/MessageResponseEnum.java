@@ -11,6 +11,9 @@ public  enum MessageResponseEnum {
   MACHINE_NOT_FOUND(HttpStatus.NOT_FOUND, "Machine not found"),
   MACHINE_IDENTIFIER_ALREADY_IN_USE(HttpStatus.CONFLICT, "Machine identifier already in use"),
 
+  CONDOMINIUM_CREATED(HttpStatus.CREATED, "Condominium created successfully"),
+  CONDOMINIUM_NOT_FOUND(HttpStatus.NOT_FOUND, "Condominium not found"),
+
   INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "Invalid parameter"),
   BAD_REQUEST(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()),
   NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase()),

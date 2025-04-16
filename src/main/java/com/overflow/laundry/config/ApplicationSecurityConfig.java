@@ -17,7 +17,7 @@ public class ApplicationSecurityConfig {
       "/farewell", "/home"
   };
   String[] protectedEndpoints = {
-      "/machines/**"
+      "/machines", "/machines/**", "/condominiums", "/condominiums/**"
   };
 
   @Bean

@@ -1,15 +1,19 @@
 package com.overflow.laundry.service.impl;
 
+import com.overflow.laundry.exception.CondominiumNotFoundException;
 import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
+import com.overflow.laundry.model.Condominium;
 import com.overflow.laundry.model.Machine;
-import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.MachineRequestDto;
+import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
+import com.overflow.laundry.model.mapper.MachineMapper;
+import com.overflow.laundry.repository.CondominiumRepository;
 import com.overflow.laundry.repository.MachineRepository;
 import com.overflow.laundry.service.MachineService;
 import com.overflow.laundry.util.PaginationUtils;
-import com.overflow.laundry.model.mapper.MachineMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static com.overflow.laundry.constant.MessageResponseEnum.CONDOMINIUM_NOT_FOUND;
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUND;
 
@@ -25,27 +30,41 @@ import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUN
 @Service
 public class MachineServiceImpl implements MachineService {
 
+  private final CondominiumRepository condominiumRepository;
   private final MachineRepository machineRepository;
   private final MachineMapper machineMapper;
 
   @Autowired
-  public MachineServiceImpl(MachineRepository machineRepository, MachineMapper machineMapper) {
+  public MachineServiceImpl(MachineRepository machineRepository,
+                            MachineMapper machineMapper,
+                            CondominiumRepository condominiumRepository) {
     this.machineRepository = machineRepository;
     this.machineMapper = machineMapper;
+    this.condominiumRepository = condominiumRepository;
   }
 
   @Override
-  public MachineDto createMachine(MachineDto machineDto) {
-    machineRepository.findMachineByIdentifier(machineDto.identifier())
+  public MachineResponseDto createMachine(MachineRequestDto machineRequestDto) {
+
+    if (machineRequestDto.id() != null) {
+      throw new IllegalArgumentException("Machine ID should NOT be provided for creation");
+    }
+    if (machineRequestDto.condominiumId() == null) {
+      throw new IllegalArgumentException("Condominium ID should NOT be null");
+    }
+    machineRepository.findMachineByIdentifier(machineRequestDto.identifier())
         .ifPresent(machine -> {
           throw new MachineIdentifierAlreadyInUseException(MACHINE_IDENTIFIER_ALREADY_IN_USE.label);
-        });
-    Machine machine = machineMapper.toEntity(machineDto);
+        }); // TODO: Make it by condominum ID
+    Condominium condominiumEntity = condominiumRepository.findById(machineRequestDto.condominiumId())
+        .orElseThrow(() -> new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label));
+
+    Machine machine = machineMapper.toEntity(machineRequestDto, condominiumEntity);
     return machineMapper.toDto(machineRepository.save(machine));
   }
 
   @Override
-  public MachineDto getMachineById(Long id) {
+  public MachineResponseDto getMachineById(Long id) {
     Optional<Machine> machine = machineRepository.findById(id);
     if (machine.isEmpty()) {
       throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
@@ -54,11 +73,16 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public MachineDto updateMachine(MachineDto machineDto) {
-    if (!machineRepository.existsById(machineDto.id())) {
+  public MachineResponseDto updateMachine(MachineRequestDto machineRequestDto) {
+    if (!machineRepository.existsById(machineRequestDto.id())) {
       throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
     }
-    Machine machine = machineMapper.toEntity(machineDto);
+    if (machineRequestDto.condominiumId() == null) {
+      throw new IllegalArgumentException("Condominium ID should NOT be null"); //TODO: test it
+    }
+    Condominium condominiumEntity = condominiumRepository.findById(machineRequestDto.condominiumId())
+        .orElseThrow(() -> new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label)); //TODO: test it
+    Machine machine = machineMapper.toEntity(machineRequestDto, condominiumEntity);
     return machineMapper.toDto(machineRepository.save(machine));
   }
 
@@ -71,11 +95,11 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public PaginationResponseDto<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
+  public PaginationResponseDto<MachineResponseDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
     Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
     Page<Machine> allMachines = machineRepository.findAll(pageable);
-    List<MachineDto> listMachineDto = allMachines.stream().map(machineMapper::toDto).toList();
-    return PaginationResponseDto.<MachineDto>builder()
+    List<MachineResponseDto> listMachineDto = allMachines.stream().map(machineMapper::toDto).toList();
+    return PaginationResponseDto.<MachineResponseDto>builder()
         .content(listMachineDto)
         .totalPages(allMachines.getTotalPages())
         .totalElements(allMachines.getTotalElements())
@@ -88,7 +112,7 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public MachineDto getMachineByIdentifier(String identifier) {
+  public MachineResponseDto getMachineByIdentifier(String identifier) {
 
     Optional<Machine> machine = Optional.of(machineRepository.findMachineByIdentifier(identifier)
         .orElseThrow(() -> new MachineNotFoundException(MACHINE_NOT_FOUND.label)));
