@@ -17,11 +17,13 @@ public class MachineRepositoryImpl implements MachineRepositoryCustom {
   private EntityManager entityManager;
 
   @Override
-  public Optional<Machine> findMachineByIdentifier(String identifier) {
+  public Optional<Machine> findMachineByCondominiumIdAndIdentifier(String identifier, Long condominiumId) {
     try {
       TypedQuery<Machine> query = entityManager.createQuery(
-          "SELECT m FROM Machine m WHERE m.identifier = :identifier", Machine.class);
+          "SELECT m FROM Machine m WHERE m.identifier = :identifier AND m.condominium.id = :condominiumId",
+          Machine.class);
       query.setParameter("identifier", identifier);
+      query.setParameter("condominiumId", condominiumId);
       return Optional.of(query.getSingleResult());
     } catch (NoResultException e) {
       return Optional.empty();

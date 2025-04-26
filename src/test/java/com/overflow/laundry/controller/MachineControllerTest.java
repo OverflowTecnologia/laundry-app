@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.overflow.laundry.constant.ObjectValidatorErrors;
 import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
-import com.overflow.laundry.model.dto.CondominiumDto;
+import com.overflow.laundry.model.dto.CondominiumResponseDto;
 import com.overflow.laundry.model.dto.MachineRequestDto;
 import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
@@ -130,11 +130,14 @@ public class MachineControllerTest {
   @Test
   void givenMachineExists_whenGetMachineByIdentifier_thenReturnMachine() throws Exception {
     String machineIdentifier = "machine-identifier";
-    MachineResponseDto mockMachine = getMachineResponseDto(1L, machineIdentifier, getMockCondominium(), "Washer");
+    CondominiumResponseDto mockCondominium = getMockCondominium();
+    MachineResponseDto mockMachine = getMachineResponseDto(1L, machineIdentifier, mockCondominium, "Washer");
 
-    when(machineService.getMachineByIdentifier(any())).thenReturn(mockMachine);
+    when(machineService.getMachineByCondominiumAndIdentifier(any(), any())).thenReturn(mockMachine);
 
-    mockMvc.perform(get("/machines/identifier/" + machineIdentifier)
+    mockMvc.perform(get("/machines/identifier")
+            .param("identifier", machineIdentifier)
+            .param("condominiumId", String.valueOf(mockCondominium.id()))
             .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
@@ -145,11 +148,12 @@ public class MachineControllerTest {
 
   @Test
   void givenMachineDoesNotExists_whenGetMachineByIdentifier_thenReturnMachineNotFoundException() throws Exception {
-
     String expectedMessage = "Machine not found with the provided identifier";
-    when(machineService.getMachineByIdentifier(any())).thenThrow(
+    when(machineService.getMachineByCondominiumAndIdentifier(any(), any())).thenThrow(
         new MachineNotFoundException(expectedMessage));
-    mockMvc.perform(get("/machines/identifier/machine-identifier")
+    mockMvc.perform(get("/machines/identifier")
+            .param("identifier", "anyIdentifier")
+            .param("condominiumId", "1")
             .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
@@ -161,24 +165,66 @@ public class MachineControllerTest {
   @Test
   void givenIdentifierIsEmpty_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
 
-    mockMvc.perform(get("/machines/identifier/   ")
+    String expectedMessage = "Parameter 'identifier' must not be blank";
+    mockMvc.perform(get("/machines/identifier")
+            .param("identifier", "")
+            .param("condominiumId", "1")
             .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Bad Request"))
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
 
   }
 
   @Test
-  void givenIdentifierIsNull_whenGetMachineByIdentifier_thenReturnNotFound() throws Exception {
+  void givenIdentifierIsNull_whenGetMachineByIdentifier_thenReturnBadRequest()  throws Exception {
 
-    mockMvc.perform(get("/machines/identifier/")
+    String expectedMessage = "Required request parameter 'identifier' for method parameter type String is not present";
+    mockMvc.perform(get("/machines/identifier")
+            .param("condominiumId", "1")
             .header("Authorization", "Bearer test_token")
             .contentType("application/json"))
         .andDo(print())
-        .andExpect(status().isNotFound());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Bad Request"))
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
 
   }
+
+  @Test
+  void givenCondominiumIdIsEmpty_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
+
+    String expectedMessage = "Required request parameter 'condominiumId' for method parameter type Long is present "
+        + "but converted to null";
+    mockMvc.perform(get("/machines/identifier")
+            .param("identifier", "any")
+            .param("condominiumId", "")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Bad Request"))
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
+
+  }
+
+  @Test
+  void givenCondominiumIdIsNotPresent_whenGetMachineByIdentifier_thenReturnBadRequest() throws Exception {
+    String expectedMessage = "Required request parameter 'condominiumId' for method parameter type Long is not present";
+    mockMvc.perform(get("/machines/identifier")
+            .param("identifier", "any")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Bad Request"))
+        .andExpect(jsonPath("$.data.details").value(expectedMessage));
+
+  }
+
+
 
   @Test
   void givenMachine_whenMachineIsUpdated_thenReturnAccepted() throws Exception {
@@ -345,7 +391,7 @@ public class MachineControllerTest {
 
     when(machineService.createMachine(any(MachineRequestDto.class))).thenThrow(
         new MachineIdentifierAlreadyInUseException(
-        "Machine identifier already in use"));
+            "Machine identifier already in use"));
 
     String machineJson = objectMapper.writeValueAsString(mockMachine);
     mockMvc.perform(post("/machines")
@@ -365,7 +411,7 @@ public class MachineControllerTest {
   }
 
   private static MachineResponseDto getMachineResponseDto(Long id, String identifier,
-                                                          CondominiumDto condominium, String type) {
+                                                          CondominiumResponseDto condominium, String type) {
     return MachineResponseDto.builder()
         .id(id)
         .identifier(identifier)
@@ -389,8 +435,8 @@ public class MachineControllerTest {
         .build();
   }
 
-  private static CondominiumDto getMockCondominium() {
-    return CondominiumDto.builder()
+  private static CondominiumResponseDto getMockCondominium() {
+    return CondominiumResponseDto.builder()
         .id(1L)
         .name("Condominium 1")
         .email("test@test.com")
@@ -405,14 +451,6 @@ public class MachineControllerTest {
         Arguments.of(MachineRequestDto.builder().identifier(null).condominiumId(1L).type("Washer").build()),
         Arguments.of(MachineRequestDto.builder().identifier("identifier").condominiumId(null).type("Washer").build()),
         Arguments.of(MachineRequestDto.builder().identifier("identifier").condominiumId(1L).type(null).build())
-    );
-  }
-
-  private static Stream<Arguments> provideStringsForIsEmpty() {
-    return Stream.of(
-        Arguments.of("", "central", "Washer"),
-        Arguments.of("123", "", "Washer"),
-        Arguments.of("123", "central", "")
     );
   }
 

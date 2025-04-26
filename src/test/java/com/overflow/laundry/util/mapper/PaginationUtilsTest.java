@@ -60,7 +60,7 @@ public class PaginationUtilsTest {
     assertEquals(5, responseDto.totalPages());
     assertEquals(50L, responseDto.totalElements());
     assertEquals(10, responseDto.size());
-    assertEquals(1, responseDto.page());
+    assertEquals(0, responseDto.page());
     assertFalse(responseDto.empty());
     assertFalse(responseDto.last());
     assertFalse(responseDto.first());

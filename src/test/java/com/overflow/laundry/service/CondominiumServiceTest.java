@@ -1,7 +1,9 @@
 package com.overflow.laundry.service;
 
+import com.overflow.laundry.exception.CondominiumNotFoundException;
 import com.overflow.laundry.model.Condominium;
-import com.overflow.laundry.model.dto.CondominiumDto;
+import com.overflow.laundry.model.dto.CondominiumRequestDto;
+import com.overflow.laundry.model.dto.CondominiumResponseDto;
 import com.overflow.laundry.model.mapper.CondominiumMapper;
 import com.overflow.laundry.repository.CondominiumRepository;
 import com.overflow.laundry.service.impl.CondominiumServiceImpl;
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -36,18 +40,18 @@ public class CondominiumServiceTest {
   @Test
   void givenCondominium_whenCreateCondominiumIsCalled_thenCreateCondominium() {
 
-    CondominiumDto condominiumDto = getTestCondominium();
+    CondominiumRequestDto condominiumRequestDto = getTestCondominium();
     when(condominiumRepository.save(any(Condominium.class))).thenReturn(getMockCondominiumEntity());
-    CondominiumDto condominiumCreated = condominiumService.createCondominium(condominiumDto);
+    CondominiumResponseDto condominiumCreated = condominiumService.createCondominium(condominiumRequestDto);
 
-    assertEquals(getMockCondominium(), condominiumCreated);
+    assertEquals(getMockCondominiumResponseDto(), condominiumCreated);
 
   }
 
   @Test
   void givenCondominiumWithId_whenCreateCondominiumIsCalled_thenReturnIllegalArgumentException() {
 
-    CondominiumDto condominiumDto = CondominiumDto.builder()
+    CondominiumRequestDto condominiumRequestDto = CondominiumRequestDto.builder()
         .id(1L)
         .name("Test Condominium")
         .address("123 Test St")
@@ -56,13 +60,31 @@ public class CondominiumServiceTest {
         .build();
 
     assertThrows(IllegalArgumentException.class, () -> {
-      condominiumService.createCondominium(condominiumDto);
+      condominiumService.createCondominium(condominiumRequestDto);
     });
 
   }
 
-  private static CondominiumDto getTestCondominium() {
-    return CondominiumDto.builder()
+  @Test
+  void givenId_whenGetCondominiumById_thenReturnCondominium() {
+    Long id = 1L;
+    when(condominiumRepository.findById(id)).thenReturn(Optional.of(getMockCondominiumEntity()));
+    CondominiumResponseDto condominiumResponseDto = condominiumService.getCondominiumById(id);
+
+    assertEquals(getMockCondominiumResponseDto(), condominiumResponseDto);
+  }
+
+  @Test
+  void givenId_whenGetCondominiumById_thenReturnCondominiumNotFoundException() {
+    Long id = 1L;
+    when(condominiumRepository.findById(id)).thenReturn(Optional.empty());
+    assertThrows(CondominiumNotFoundException.class, () -> {
+      condominiumService.getCondominiumById(id);
+    });
+  }
+
+  private static CondominiumRequestDto getTestCondominium() {
+    return CondominiumRequestDto.builder()
         .name("Test Condominium")
         .address("123 Test St")
         .contactPhone("1234567890")
@@ -70,8 +92,8 @@ public class CondominiumServiceTest {
         .build();
   }
 
-  private static CondominiumDto getMockCondominium() {
-    return CondominiumDto.builder()
+  private static CondominiumResponseDto getMockCondominiumResponseDto() {
+    return CondominiumResponseDto.builder()
         .id(1L)
         .name("Test Condominium")
         .address("123 Test St")

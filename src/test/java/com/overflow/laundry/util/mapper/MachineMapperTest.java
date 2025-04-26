@@ -2,7 +2,7 @@ package com.overflow.laundry.util.mapper;
 
 import com.overflow.laundry.model.Condominium;
 import com.overflow.laundry.model.Machine;
-import com.overflow.laundry.model.dto.CondominiumDto;
+import com.overflow.laundry.model.dto.CondominiumResponseDto;
 import com.overflow.laundry.model.dto.MachineRequestDto;
 import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.mapper.CondominiumMapper;
@@ -36,7 +36,7 @@ public class MachineMapperTest {
 
   private static MachineResponseDto getMachineResponseDto() {
     return MachineResponseDto.builder().id(1L).identifier("Washing Machine")
-        .condominium(getMockCondominiumDto()).type("Washer").build();
+        .condominium(getMockCondominiumResponseDto()).type("Washer").build();
   }
 
   private static MachineRequestDto getMachineRequestDto() {
@@ -51,8 +51,8 @@ public class MachineMapperTest {
     return new Condominium(1L, "Condominium 1", "123 Main St", "123456789", "test@test.com", null);
   }
 
-  private static CondominiumDto getMockCondominiumDto() {
-    return CondominiumDto.builder()
+  private static CondominiumResponseDto getMockCondominiumResponseDto() {
+    return CondominiumResponseDto.builder()
         .id(1L)
         .name("Condominium 1")
         .email("test@test.com")

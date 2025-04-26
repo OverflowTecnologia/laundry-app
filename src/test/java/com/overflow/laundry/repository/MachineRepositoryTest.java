@@ -12,7 +12,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
@@ -24,31 +23,47 @@ public class MachineRepositoryTest {
   @Autowired
   private CondominiumRepository condominiumRepository;
 
-  @Test
-  void givenMachineIsSaved_whenFindMachineByIdentifierIsCalled_thenReturnMachine() {
-    Condominium newCondominium = new Condominium();
-    newCondominium.setName("Condominium 1");
-    newCondominium.setAddress("123 Main St");
-    newCondominium.setContactPhone("123456789");
-    newCondominium.setEmail("test@test.com");
+  private Condominium createAndSaveCondominium() {
+    Condominium condominium = new Condominium();
+    condominium.setName("Condominium 1");
+    condominium.setAddress("123 Main St");
+    condominium.setContactPhone("123456789");
+    condominium.setEmail("test@test.com");
+    return condominiumRepository.save(condominium);
+  }
 
-    Condominium condominium = condominiumRepository.save(newCondominium);
-
+  private Machine createAndSaveMachine(Condominium condominium) {
     Machine machine = new Machine();
     machine.setIdentifier("Washing Machine");
-    machine.setCondominium(condominium);
     machine.setType("Washer");
+    machine.setCondominium(condominium);
+    return machineRepository.save(machine);
+  }
 
-    machineRepository.save(machine);
+  @Test
+  void givenMachineIsSaved_whenFindMachineByIdentifierIsCalled_thenReturnMachine() {
+    Condominium condominium = createAndSaveCondominium();
+    Machine machine = createAndSaveMachine(condominium);
 
-    Optional<Machine> foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
-    assertEquals(machine, foundMachine.orElse(null));
+    Optional<Machine> foundMachine = machineRepository.findMachineByCondominiumIdAndIdentifier(
+        "Washing Machine", condominium.getId());
+    assertEquals(Optional.of(machine), foundMachine);
+  }
+
+  @Test
+  void givenMachineIsSaved_whenFindMachineByIdentifierIsCalledWithDifferentCondominiumId_thenReturnMachine() {
+    Condominium condominium = createAndSaveCondominium();
+    createAndSaveMachine(condominium);
+
+    Optional<Machine> foundMachine = machineRepository.findMachineByCondominiumIdAndIdentifier(
+        "Washing Machine", 64984L);
+    assertEquals(Optional.empty(), foundMachine);
   }
 
   @Test
   void givenMachineDoesNotExists_whenFindMachineByIdentifierIsCalled_thenReturnEmptyOptional() {
-    Optional<Machine> foundMachine = machineRepository.findMachineByIdentifier("Washing Machine");
+    Optional<Machine> foundMachine = machineRepository.findMachineByCondominiumIdAndIdentifier(
+        "Washing Machine", 1L);
     assertEquals(Optional.empty(), foundMachine);
   }
-
 }

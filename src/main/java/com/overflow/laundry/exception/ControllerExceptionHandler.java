@@ -1,14 +1,18 @@
 package com.overflow.laundry.exception;
 
 import com.overflow.laundry.config.StandardResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.overflow.laundry.constant.MessageResponseEnum.BAD_REQUEST;
 import static com.overflow.laundry.constant.MessageResponseEnum.INTERNAL_SERVER_ERROR;
@@ -27,13 +31,6 @@ public class ControllerExceptionHandler {
       Exception ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
     return StandardResponse.error(INTERNAL_SERVER_ERROR, message);
-  }
-
-  @ExceptionHandler(NoResourceFoundException.class)
-  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleNoResourceFoundException(
-      NoResourceFoundException ex, WebRequest request) {
-    StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(NOT_FOUND, message);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -57,6 +54,30 @@ public class ControllerExceptionHandler {
     return StandardResponse.error(BAD_REQUEST, message);
   }
 
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleConstraintViolationException(
+      ConstraintViolationException ex, WebRequest request) {
+
+    Set<ConstraintViolation<?>> constraintViolations = ex.getConstraintViolations();
+    String violationsMessages = constraintViolations.stream()
+        .map(this::formatConstraintViolationMessage)
+        .collect(Collectors.joining(", "));
+
+    StandardErrorMessage standardErrorMessage = StandardErrorMessage.builder()
+        .details(violationsMessages)
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
+
+    return StandardResponse.error(INVALID_PARAMETER, standardErrorMessage);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMissingServletRequestParameterException(
+      MissingServletRequestParameterException ex, WebRequest request) {
+    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+    return StandardResponse.error(INVALID_PARAMETER, message);
+  }
+
   @ExceptionHandler(MachineNotFoundException.class)
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMachineNotFoundException(
       MachineNotFoundException ex, WebRequest request) {
@@ -72,14 +93,6 @@ public class ControllerExceptionHandler {
 
   }
 
-  @ExceptionHandler(HandlerMethodValidationException.class)
-  public ResponseEntity<StandardResponse<StandardErrorMessage>> handleHandlerMethodValidationException(
-      HandlerMethodValidationException ex, WebRequest request) {
-    StandardErrorMessage message = getStandardErrorMessage(ex, request);
-    return StandardResponse.error(INVALID_PARAMETER, message);
-  }
-
-
   @ExceptionHandler(MachineIdentifierAlreadyInUseException.class)
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleMachineIdentifierAlreadyInUseException(
       MachineIdentifierAlreadyInUseException ex, WebRequest request) {
@@ -94,6 +107,12 @@ public class ControllerExceptionHandler {
     return StandardResponse.error(NOT_FOUND, message);
   }
 
+  private String formatConstraintViolationMessage(ConstraintViolation<?> violation) {
+    String fieldName = violation.getPropertyPath().toString();
+    fieldName = fieldName.contains(".") ? fieldName.substring(fieldName.lastIndexOf('.') + 1) : fieldName;
+    return "Parameter '" + fieldName + "' " + violation.getMessage();
+  }
+
   private static StandardErrorMessage getStandardErrorMessage(Exception ex, WebRequest request) {
     String messageDetail = ex.getLocalizedMessage();
     logWarn(messageDetail, ex);
@@ -104,4 +123,3 @@ public class ControllerExceptionHandler {
   }
 
 }
-

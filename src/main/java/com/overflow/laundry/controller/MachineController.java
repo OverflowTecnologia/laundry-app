@@ -9,7 +9,9 @@ import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +30,7 @@ import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_UPDATED;
 
 @RestController
 @RequestMapping("/machines")
+@Validated
 public class MachineController {
 
   private final MachineService machineService;
@@ -64,10 +67,11 @@ public class MachineController {
   }
 
 
-  @GetMapping("/identifier/{identifier}")
+  @GetMapping("/identifier")
   public ResponseEntity<StandardResponse<MachineResponseDto>> getMachineByIdentifier(
-      @PathVariable @NotBlank String identifier) {
-    MachineResponseDto machine = machineService.getMachineByIdentifier(identifier);
+      @RequestParam @NotNull Long condominiumId,
+      @RequestParam @NotBlank String identifier) {
+    MachineResponseDto machine = machineService.getMachineByCondominiumAndIdentifier(condominiumId, identifier);
     return StandardResponse.success(MACHINE_FOUND, machine);
   }
 
@@ -78,8 +82,8 @@ public class MachineController {
       @RequestParam(required = false) String sortBy,
       @RequestParam(required = false) String direction) {
 
-    final PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
-    final PaginationResponseDto<MachineResponseDto> allMachines = machineService.getAllMachines(paginationRequest);
+    PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
+    PaginationResponseDto<MachineResponseDto> allMachines = machineService.getAllMachines(paginationRequest);
     return StandardResponse.success(MACHINE_FOUND, allMachines);
 
   }

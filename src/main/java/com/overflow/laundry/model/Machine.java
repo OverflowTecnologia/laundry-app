@@ -1,7 +1,6 @@
 package com.overflow.laundry.model;
 
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +24,7 @@ public class Machine {
   private String identifier;
   private String type;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "condominium_id", referencedColumnName = "id")
   private Condominium condominium;
 

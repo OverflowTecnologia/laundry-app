@@ -25,6 +25,7 @@ import java.util.Optional;
 import static com.overflow.laundry.constant.MessageResponseEnum.CONDOMINIUM_NOT_FOUND;
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUND;
+import static com.overflow.laundry.constant.ObjectValidatorErrors.MACHINE_ID_IS_PROVIDED_ON_CREATION;
 
 
 @Service
@@ -47,17 +48,16 @@ public class MachineServiceImpl implements MachineService {
   public MachineResponseDto createMachine(MachineRequestDto machineRequestDto) {
 
     if (machineRequestDto.id() != null) {
-      throw new IllegalArgumentException("Machine ID should NOT be provided for creation");
+      throw new IllegalArgumentException(MACHINE_ID_IS_PROVIDED_ON_CREATION);
     }
-    if (machineRequestDto.condominiumId() == null) {
-      throw new IllegalArgumentException("Condominium ID should NOT be null");
-    }
-    machineRepository.findMachineByIdentifier(machineRequestDto.identifier())
-        .ifPresent(machine -> {
-          throw new MachineIdentifierAlreadyInUseException(MACHINE_IDENTIFIER_ALREADY_IN_USE.label);
-        }); // TODO: Make it by condominum ID
+
     Condominium condominiumEntity = condominiumRepository.findById(machineRequestDto.condominiumId())
         .orElseThrow(() -> new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label));
+    machineRepository.findMachineByCondominiumIdAndIdentifier(machineRequestDto.identifier(),
+            machineRequestDto.condominiumId())
+        .ifPresent(machine -> {
+          throw new MachineIdentifierAlreadyInUseException(MACHINE_IDENTIFIER_ALREADY_IN_USE.label);
+        });
 
     Machine machine = machineMapper.toEntity(machineRequestDto, condominiumEntity);
     return machineMapper.toDto(machineRepository.save(machine));
@@ -77,11 +77,8 @@ public class MachineServiceImpl implements MachineService {
     if (!machineRepository.existsById(machineRequestDto.id())) {
       throw new MachineNotFoundException(MACHINE_NOT_FOUND.label);
     }
-    if (machineRequestDto.condominiumId() == null) {
-      throw new IllegalArgumentException("Condominium ID should NOT be null"); //TODO: test it
-    }
     Condominium condominiumEntity = condominiumRepository.findById(machineRequestDto.condominiumId())
-        .orElseThrow(() -> new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label)); //TODO: test it
+        .orElseThrow(() -> new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label));
     Machine machine = machineMapper.toEntity(machineRequestDto, condominiumEntity);
     return machineMapper.toDto(machineRepository.save(machine));
   }
@@ -104,7 +101,7 @@ public class MachineServiceImpl implements MachineService {
         .totalPages(allMachines.getTotalPages())
         .totalElements(allMachines.getTotalElements())
         .size(allMachines.getSize())
-        .page(allMachines.getNumber())
+        .page(allMachines.getNumber() + 1) // Adjusting page number to be 1-based
         .empty(allMachines.isEmpty())
         .last(allMachines.isLast())
         .first(allMachines.isFirst())
@@ -112,9 +109,10 @@ public class MachineServiceImpl implements MachineService {
   }
 
   @Override
-  public MachineResponseDto getMachineByIdentifier(String identifier) {
+  public MachineResponseDto getMachineByCondominiumAndIdentifier(Long condominiumId, String identifier) {
 
-    Optional<Machine> machine = Optional.of(machineRepository.findMachineByIdentifier(identifier)
+    Optional<Machine> machine = Optional.of(machineRepository.findMachineByCondominiumIdAndIdentifier(
+        identifier, condominiumId)
         .orElseThrow(() -> new MachineNotFoundException(MACHINE_NOT_FOUND.label)));
     return machineMapper.toDto(machine.get());
   }

@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record MachineResponseDto(Long id,
                                  String identifier,
-                                 CondominiumDto condominium,
+                                 CondominiumResponseDto condominium,
                                  String type) {
 
 }

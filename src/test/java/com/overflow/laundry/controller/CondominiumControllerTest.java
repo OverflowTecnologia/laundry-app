@@ -1,7 +1,9 @@
 package com.overflow.laundry.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.overflow.laundry.model.dto.CondominiumDto;
+import com.overflow.laundry.exception.CondominiumNotFoundException;
+import com.overflow.laundry.model.dto.CondominiumRequestDto;
+import com.overflow.laundry.model.dto.CondominiumResponseDto;
 import com.overflow.laundry.service.CondominiumService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +22,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.stream.Stream;
 
+import static com.overflow.laundry.constant.MessageResponseEnum.CONDOMINIUM_NOT_FOUND;
 import static com.overflow.laundry.constant.ObjectValidatorErrors.CONDOMINIUM_ADDRESS_NOT_EMPTY_NULL;
 import static com.overflow.laundry.constant.ObjectValidatorErrors.CONDOMINIUM_CONTACT_NOT_EMPTY_NULL;
 import static com.overflow.laundry.constant.ObjectValidatorErrors.CONDOMINIUM_EMAIL_FORMAT_NOT_VALID;
 import static com.overflow.laundry.constant.ObjectValidatorErrors.CONDOMINIUM_EMAIL_NOT_EMPTY_NULL;
 import static com.overflow.laundry.constant.ObjectValidatorErrors.CONDOMINIUM_NAME_NOT_EMPTY_NULL;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,11 +60,11 @@ public class CondominiumControllerTest {
   @Test
   void givenCondominium_whenCreateCondominiumIsCalled_thenReturnCreated() throws Exception {
 
-    CondominiumDto condominiumDto = getTestCondominium();
-    CondominiumDto mockCondominiumDto = getMockCondominium();
+    CondominiumRequestDto condominiumRequestDto = getMockCondominiumDto();
+    CondominiumResponseDto mockCondominiumRequestDto = getMockCondominiumResponseDto();
 
-    when(condominiumService.createCondominium(condominiumDto)).thenReturn(mockCondominiumDto);
-    String condominiumJson = objectMapper.writeValueAsString(condominiumDto);
+    when(condominiumService.createCondominium(condominiumRequestDto)).thenReturn(mockCondominiumRequestDto);
+    String condominiumJson = objectMapper.writeValueAsString(condominiumRequestDto);
 
     mockMvc.perform(post("/condominiums")
             .header("Authorization", "Bearer test_token")
@@ -76,11 +81,11 @@ public class CondominiumControllerTest {
 
   @Test
   void givenCondominium_whenCreateCondominiumIsCalled_thenReturnStandardResponseJson() throws Exception {
-    CondominiumDto condominiumDto = getTestCondominium();
-    CondominiumDto mockCondominiumDto = getMockCondominium();
+    CondominiumRequestDto condominiumRequestDto = getMockCondominiumDto();
+    CondominiumResponseDto mockCondominiumResponseDto = getMockCondominiumResponseDto();
 
-    when(condominiumService.createCondominium(condominiumDto)).thenReturn(mockCondominiumDto);
-    String condominiumJson = objectMapper.writeValueAsString(condominiumDto);
+    when(condominiumService.createCondominium(condominiumRequestDto)).thenReturn(mockCondominiumResponseDto);
+    String condominiumJson = objectMapper.writeValueAsString(condominiumRequestDto);
 
     mockMvc.perform(post("/condominiums")
             .header("Authorization", "Bearer test_token")
@@ -102,7 +107,7 @@ public class CondominiumControllerTest {
   @ParameterizedTest
   @MethodSource("provideInvalidCondominiumData")
   void givenSomeCondominiumInfoIsMissing_whenCreateCondominiumIsCalled_thenReturnBadRequest(
-      CondominiumDto testCondominium, String expectedErrorMessage) throws Exception {
+      CondominiumRequestDto testCondominium, String expectedErrorMessage) throws Exception {
 
     String condominiumJson = objectMapper.writeValueAsString(testCondominium);
 
@@ -116,8 +121,50 @@ public class CondominiumControllerTest {
         .andExpect(jsonPath("$.data.details").value(expectedErrorMessage));
   }
 
-  private static CondominiumDto getTestCondominium() {
-    return CondominiumDto.builder()
+  @Test
+  void givenCondominiumExists_whenGetCondominiumById_thenReturnCondominium() throws Exception {
+    when(condominiumService.getCondominiumById(any())).thenReturn(getMockCondominiumResponseDto());
+
+    mockMvc.perform(get("/condominiums/1")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.id").value(1L))
+        .andExpect(jsonPath("$.data.name").value("Test Condominium"))
+        .andExpect(jsonPath("$.data.address").value("123 Test St"))
+        .andExpect(jsonPath("$.data.contactPhone").value("1234567890"))
+        .andExpect(jsonPath("$.data.email").value("john@john.com"));
+
+  }
+
+  @Test
+  void givenWrongDataType_whenGetCondominiumById_thenReturnBadRequest() throws Exception {
+
+    mockMvc.perform(get("/condominiums/a")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Bad Request"))
+        .andExpect(jsonPath("$.data.details").value("id should be of type java.lang.Long"));
+  }
+
+  @Test
+  void givenCondominiumId_whenGetCondominiumById_thenReturnNotFound() throws Exception {
+    when(condominiumService.getCondominiumById(any())).thenThrow(new
+        CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label));
+
+    mockMvc.perform(get("/condominiums/55")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.success").value(false))
+        .andExpect(jsonPath("$.message").value("Not Found"))
+        .andExpect(jsonPath("$.data.details").value(CONDOMINIUM_NOT_FOUND.label));
+  }
+
+  private static CondominiumRequestDto getMockCondominiumDto() {
+    return CondominiumRequestDto.builder()
         .name("Test Condominium")
         .address("123 Test St")
         .contactPhone("1234567890")
@@ -126,29 +173,30 @@ public class CondominiumControllerTest {
   }
 
   public static Stream<Arguments> provideInvalidCondominiumData() {
-    CondominiumDto condominiumDtoEmailTest =
-        createCondominiumDto("Jr", "123 Test St", "1234567890", null);
-    CondominiumDto condominiumDtoEmailFormatTest =
-        createCondominiumDto("Jr", "123 Test St", "1234567890", "john.john.com");
-    CondominiumDto condominiumDtoContactTest =
-        createCondominiumDto("Jr", "123 Test St", null, "john@john.com");
-    CondominiumDto condominiumDtoAddressTest =
-        createCondominiumDto("Jr", null, "1234567890", "john@john.com");
-    CondominiumDto condominiumDtoNameTest =
-        createCondominiumDto(null, "123 Test St", "1234567890", "john@john.com");
+    CondominiumRequestDto condominiumRequestDtoEmailTest =
+        createCondominiumRequestDto("Jr", "123 Test St", "1234567890", null);
+    CondominiumRequestDto condominiumRequestDtoEmailFormatTest =
+        createCondominiumRequestDto("Jr", "123 Test St", "1234567890", "john.john.com");
+    CondominiumRequestDto condominiumRequestDtoContactTest =
+        createCondominiumRequestDto("Jr", "123 Test St", null, "john@john.com");
+    CondominiumRequestDto condominiumRequestDtoAddressTest =
+        createCondominiumRequestDto("Jr", null, "1234567890", "john@john.com");
+    CondominiumRequestDto condominiumRequestDtoNameTest =
+        createCondominiumRequestDto(null, "123 Test St", "1234567890", "john@john.com");
 
     return Stream.of(
-        Arguments.of(condominiumDtoEmailTest, CONDOMINIUM_EMAIL_NOT_EMPTY_NULL),
-        Arguments.of(condominiumDtoEmailFormatTest, CONDOMINIUM_EMAIL_FORMAT_NOT_VALID),
-        Arguments.of(condominiumDtoContactTest, CONDOMINIUM_CONTACT_NOT_EMPTY_NULL),
-        Arguments.of(condominiumDtoAddressTest, CONDOMINIUM_ADDRESS_NOT_EMPTY_NULL),
-        Arguments.of(condominiumDtoNameTest, CONDOMINIUM_NAME_NOT_EMPTY_NULL)
+        Arguments.of(condominiumRequestDtoEmailTest, CONDOMINIUM_EMAIL_NOT_EMPTY_NULL),
+        Arguments.of(condominiumRequestDtoEmailFormatTest, CONDOMINIUM_EMAIL_FORMAT_NOT_VALID),
+        Arguments.of(condominiumRequestDtoContactTest, CONDOMINIUM_CONTACT_NOT_EMPTY_NULL),
+        Arguments.of(condominiumRequestDtoAddressTest, CONDOMINIUM_ADDRESS_NOT_EMPTY_NULL),
+        Arguments.of(condominiumRequestDtoNameTest, CONDOMINIUM_NAME_NOT_EMPTY_NULL)
 
     );
   }
 
-  private static CondominiumDto createCondominiumDto(String name, String address, String contactPhone, String email) {
-    return CondominiumDto.builder()
+  private static CondominiumRequestDto createCondominiumRequestDto(String name, String address,
+                                                                   String contactPhone, String email) {
+    return CondominiumRequestDto.builder()
         .name(name)
         .address(address)
         .contactPhone(contactPhone)
@@ -156,8 +204,8 @@ public class CondominiumControllerTest {
         .build();
   }
 
-  private static CondominiumDto getMockCondominium() {
-    return CondominiumDto.builder()
+  private static CondominiumResponseDto getMockCondominiumResponseDto() {
+    return CondominiumResponseDto.builder()
         .id(1L)
         .name("Test Condominium")
         .address("123 Test St")

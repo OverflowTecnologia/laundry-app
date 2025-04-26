@@ -13,6 +13,7 @@ public  enum MessageResponseEnum {
 
   CONDOMINIUM_CREATED(HttpStatus.CREATED, "Condominium created successfully"),
   CONDOMINIUM_NOT_FOUND(HttpStatus.NOT_FOUND, "Condominium not found"),
+  CONDOMINIUM_FOUND(HttpStatus.OK, "Condominium found"),
 
   INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "Invalid parameter"),
   BAD_REQUEST(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase()),

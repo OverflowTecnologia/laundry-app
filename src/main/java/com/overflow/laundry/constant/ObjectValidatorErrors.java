@@ -10,6 +10,7 @@ public class ObjectValidatorErrors {
   public static final String MACHINE_CONDOMINIUM_ID_NOT_EMPTY_NULL =
       "Machine condominium ID must not be provided for creation";
   public static final String MACHINE_TYPE_OF_MACHINE_NOT_EMPTY_NULL = "Machine type must not be empty or null";
+  public static final String MACHINE_ID_IS_PROVIDED_ON_CREATION = "Machine ID should NOT be provided for creation";
 
   public static final String CONDOMINIUM_EMAIL_NOT_EMPTY_NULL = "Condominium email must not be empty or null";
   public static final String CONDOMINIUM_EMAIL_FORMAT_NOT_VALID = "Condominium email format is not valid";

@@ -16,5 +16,5 @@ public interface MachineService {
 
   PaginationResponseDto<MachineResponseDto> getAllMachines(PaginationRequestDto paginationRequestDto);
 
-  MachineResponseDto getMachineByIdentifier(String identifier);
+  MachineResponseDto getMachineByCondominiumAndIdentifier(Long condominiumId, String identifier);
 }

@@ -4,7 +4,7 @@ import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.Condominium;
 import com.overflow.laundry.model.Machine;
-import com.overflow.laundry.model.dto.CondominiumDto;
+import com.overflow.laundry.model.dto.CondominiumResponseDto;
 import com.overflow.laundry.model.dto.MachineRequestDto;
 import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
@@ -81,13 +81,30 @@ public class MachineServiceTest {
     MachineRequestDto machineRequestDto = getMachineRequestDto();
     Machine machine = getMockMachine();
 
-    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.of(machine));
+    when(machineRepository.findMachineByCondominiumIdAndIdentifier(any(), any())).thenReturn(Optional.of(machine));
+    when(condominiumRepository.findById(any())).thenReturn(Optional.of(getMockCondominium()));
 
     MachineIdentifierAlreadyInUseException exception = assertThrows(
         MachineIdentifierAlreadyInUseException.class, () -> {
           machineService.createMachine(machineRequestDto);
         });
     assertEquals("Machine identifier already in use", exception.getMessage());
+  }
+
+  @Test
+  void givenMachineWithId_whenCreateMachineIsCalled_thenThrowIllegalArgumentException() {
+    MachineRequestDto machineRequestDto = MachineRequestDto.builder()
+        .id(1L)
+        .identifier("Washing Machine")
+        .condominiumId(1L)
+        .type("Washer")
+        .build();
+
+    IllegalArgumentException exception = assertThrows(
+        IllegalArgumentException.class, () -> {
+          machineService.createMachine(machineRequestDto);
+        });
+    assertEquals("Machine ID should NOT be provided for creation", exception.getMessage());
   }
 
   @Test
@@ -106,9 +123,10 @@ public class MachineServiceTest {
   @Test
   void givenMachineDoesNotExist_whenGetMachineByIdIsCalled_thenThrowMachineNotFoundException() {
     when(machineRepository.findById(any())).thenReturn(Optional.empty());
-    assertThrows(MachineNotFoundException.class, () -> {
+    MachineNotFoundException exception = assertThrows(MachineNotFoundException.class, () -> {
       machineService.getMachineById(1L);
     });
+    assertEquals("Machine not found", exception.getMessage());
 
   }
 
@@ -137,10 +155,11 @@ public class MachineServiceTest {
   @Test
   void givenMachineDoesNotExist_whenUpdateMachineIsCalled_thenThrowMachineNotFoundException() {
     when(machineRepository.existsById(any())).thenReturn(false);
-    assertThrows(MachineNotFoundException.class, () -> {
+    MachineNotFoundException exception = assertThrows(MachineNotFoundException.class, () -> {
       machineService.updateMachine(getMachineRequestDto());
     });
     verify(machineRepository, never()).save(any());
+    assertEquals("Machine not found", exception.getMessage());
   }
 
   @Test
@@ -155,10 +174,11 @@ public class MachineServiceTest {
   void givenMachineDoesNotExist_whenDeleteMachineIsCalled_thenThrowMachineNotFoundException() {
     Long id = 1L;
     when(machineRepository.existsById(any())).thenReturn(false);
-    assertThrows(MachineNotFoundException.class, () -> {
+    MachineNotFoundException exception = assertThrows(MachineNotFoundException.class, () -> {
       machineService.deleteMachine(id);
     });
     verify(machineRepository, never()).deleteById(id);
+    assertEquals("Machine not found", exception.getMessage());
   }
 
   @Test
@@ -179,23 +199,25 @@ public class MachineServiceTest {
   }
 
   @Test
-  void givenMachineExists_whenGetMachineByIdentifierIsCalled_thenReturnMachineDto() {
+  void givenMachineExists_whenGetMachineByIdentifierIsCalled_thenReturnMachineDtoCondominiumAnd() {
     Machine mockMachine = getMockMachine();
     when(condominiumMapper.toDto(any())).thenReturn(getMockCondominiumDto());
-    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.of(mockMachine));
+    when(machineRepository.findMachineByCondominiumIdAndIdentifier(any(), any())).thenReturn(Optional.of(mockMachine));
 
     MachineResponseDto mockMachineResponseDto = getMachineResponseDto();
-    MachineResponseDto machineFound = machineService.getMachineByIdentifier("Washing Machine");
+    MachineResponseDto machineFound = machineService.getMachineByCondominiumAndIdentifier(
+        mockMachine.getCondominium().getId(), "Washing Machine");
 
     assertEquals(mockMachineResponseDto, machineFound);
   }
 
   @Test
-  void givenMachineDoesNotExist_whenGetMachineByIdentifierIsCalled_thenThrowMachineNotFoundException() {
-    when(machineRepository.findMachineByIdentifier(any())).thenReturn(Optional.empty());
-    assertThrows(MachineNotFoundException.class, () -> {
-      machineService.getMachineByIdentifier("Washing Machine");
+  void givenMachineDoesNotExist_whenGetMachineByIdentifierIsCalled_thenThrowMachineNotFoundExceptionCondomiunAnd() {
+    when(machineRepository.findMachineByCondominiumIdAndIdentifier(any(), any())).thenReturn(Optional.empty());
+    MachineNotFoundException exception = assertThrows(MachineNotFoundException.class, () -> {
+      machineService.getMachineByCondominiumAndIdentifier(1L, "Washing Machine");
     });
+    assertEquals("Machine not found", exception.getMessage());
   }
 
   private static Machine getMockMachine() {
@@ -227,8 +249,8 @@ public class MachineServiceTest {
 
   }
 
-  private static CondominiumDto getMockCondominiumDto() {
-    return CondominiumDto.builder()
+  private static CondominiumResponseDto getMockCondominiumDto() {
+    return CondominiumResponseDto.builder()
         .id(1L)
         .name("Condominium 1")
         .email("test@test.com")
