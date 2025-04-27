@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.overflow.laundry.exception.CondominiumNotFoundException;
 import com.overflow.laundry.model.dto.CondominiumRequestDto;
 import com.overflow.laundry.model.dto.CondominiumResponseDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.CondominiumService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.overflow.laundry.constant.MessageResponseEnum.CONDOMINIUM_NOT_FOUND;
@@ -161,6 +163,74 @@ public class CondominiumControllerTest {
         .andExpect(jsonPath("$.success").value(false))
         .andExpect(jsonPath("$.message").value("Not Found"))
         .andExpect(jsonPath("$.data.details").value(CONDOMINIUM_NOT_FOUND.label));
+  }
+
+  @Test
+  void givenNothing_whenGetAllCondominiums_thenReturnCondominiums() throws Exception {
+
+    List<CondominiumResponseDto> mockCondominiumResponseDto = List.of(getMockCondominiumResponseDto());
+    PaginationResponseDto<CondominiumResponseDto> mockPaginationResponseDto =
+        getMockPaginationResponseDto(mockCondominiumResponseDto);
+
+    when(condominiumService.getAllCondominiums(any())).thenReturn(mockPaginationResponseDto);
+
+    mockMvc.perform(get("/condominiums")
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void givenAllPaginationParameters_whenGetAllCondominiums_thenReturnCondominiumsWithDefaultPagination()
+      throws Exception {
+    int page = 1;
+    int size = 10;
+    String sortBy = "id";
+    String direction = "asc";
+
+    List<CondominiumResponseDto> mockCondominiumResponseDto = List.of(getMockCondominiumResponseDto());
+    PaginationResponseDto<CondominiumResponseDto> mockPaginationResponseDto =
+        getMockPaginationResponseDto(mockCondominiumResponseDto);
+
+    when(condominiumService.getAllCondominiums(any())).thenReturn(mockPaginationResponseDto);
+
+    mockMvc.perform(get("/condominiums?page=" + size
+            + "&size=" + page
+            + "&sortBy=" + sortBy
+            + "&direction=" + direction)
+            .header("Authorization", "Bearer test_token")
+            .contentType("application/json"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("Condominium found"))
+        .andExpect(jsonPath("$.data.content[0].id").value(1L))
+        .andExpect(jsonPath("$.data.content[0].name").value("Test Condominium"))
+        .andExpect(jsonPath("$.data.content[0].address").value("123 Test St"))
+        .andExpect(jsonPath("$.data.content[0].contactPhone").value("1234567890"))
+        .andExpect(jsonPath("$.data.content[0].email").value("john@john.com"))
+        .andExpect(jsonPath("$.data.empty").value(false))
+        .andExpect(jsonPath("$.data.totalPages").value(1))
+        .andExpect(jsonPath("$.data.totalElements").value(mockCondominiumResponseDto.size()))
+        .andExpect(jsonPath("$.data.size").value(size))
+        .andExpect(jsonPath("$.data.page").value(page))
+        .andExpect(jsonPath("$.data.last").value(true))
+        .andExpect(jsonPath("$.data.first").value(true));
+  }
+
+  private static <T> PaginationResponseDto<T> getMockPaginationResponseDto(List<T> mockCondominiumResponseDto) {
+    return PaginationResponseDto
+        .<T>builder()
+        .content(mockCondominiumResponseDto)
+        .totalPages(1)
+        .totalElements(mockCondominiumResponseDto.size())
+        .size(10)
+        .page(1)
+        .empty(false)
+        .last(true)
+        .first(true)
+        .build();
   }
 
   private static CondominiumRequestDto getMockCondominiumDto() {

@@ -196,6 +196,7 @@ public class MachineServiceTest {
     when(machineRepository.findAll(any(Pageable.class))).thenReturn(machinePage);
     machineService.getAllMachines(defaultPagination);
     verify(machineRepository, times(1)).findAll(any(Pageable.class));
+    //TODO: Refactor test
   }
 
   @Test

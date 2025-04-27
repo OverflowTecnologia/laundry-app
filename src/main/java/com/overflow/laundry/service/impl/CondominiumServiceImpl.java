@@ -4,9 +4,14 @@ import com.overflow.laundry.exception.CondominiumNotFoundException;
 import com.overflow.laundry.model.Condominium;
 import com.overflow.laundry.model.dto.CondominiumRequestDto;
 import com.overflow.laundry.model.dto.CondominiumResponseDto;
+import com.overflow.laundry.model.dto.PaginationRequestDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.model.mapper.CondominiumMapper;
 import com.overflow.laundry.repository.CondominiumRepository;
 import com.overflow.laundry.service.CondominiumService;
+import com.overflow.laundry.util.PaginationUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -40,5 +45,12 @@ public class CondominiumServiceImpl implements CondominiumService {
       throw new CondominiumNotFoundException(CONDOMINIUM_NOT_FOUND.label);
     }
     return condominiumMapper.toDto(condominiumFound.get());
+  }
+
+  @Override
+  public PaginationResponseDto<CondominiumResponseDto> getAllCondominiums(PaginationRequestDto paginationRequestDto) {
+    Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
+    Page<Condominium> allCondominiums = condominiumRepository.findAll(pageable);
+    return PaginationUtils.toPaginationResponse(allCondominiums, condominiumMapper::toDto);
   }
 }

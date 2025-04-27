@@ -96,7 +96,7 @@ public class MachineServiceImpl implements MachineService {
     Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
     Page<Machine> allMachines = machineRepository.findAll(pageable);
     List<MachineResponseDto> listMachineDto = allMachines.stream().map(machineMapper::toDto).toList();
-    return PaginationResponseDto.<MachineResponseDto>builder()
+    return PaginationResponseDto.<MachineResponseDto>builder() //TODO: Refactor to use PaginationUtils
         .content(listMachineDto)
         .totalPages(allMachines.getTotalPages())
         .totalElements(allMachines.getTotalElements())

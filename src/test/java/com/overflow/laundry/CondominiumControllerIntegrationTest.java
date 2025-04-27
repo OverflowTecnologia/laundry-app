@@ -1,10 +1,16 @@
 package com.overflow.laundry;
 
 import com.overflow.laundry.config.StandardResponse;
+import com.overflow.laundry.constant.ObjectValidatorErrors;
+import com.overflow.laundry.exception.StandardErrorMessage;
 import com.overflow.laundry.model.dto.CondominiumRequestDto;
 import com.overflow.laundry.model.dto.CondominiumResponseDto;
+import com.overflow.laundry.model.dto.PaginationResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -22,11 +28,12 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -91,6 +98,65 @@ public class CondominiumControllerIntegrationTest {
     assertThat(response.getBody().getData().contactPhone()).isEqualTo("123456789");
     assertThat(response.getBody().getData().email()).isEqualTo("test@test.com");
 
+  }
+
+  @Test
+  void givenStandardPaginationInfo_whenGetAllCondominiums_thenReturnCondominiums() {
+    int page = 1;
+    int size = 10;
+    String sortBy = "id";
+    String direction = "ASC";
+
+    HttpEntity<CondominiumRequestDto> requestEntity = createRequestEntityWithDefaultHeaders(null);
+
+    ResponseEntity<StandardResponse<PaginationResponseDto<CondominiumResponseDto>>> response = restTemplate.exchange(
+        "http://localhost:" + port + "/condominiums?page=" + page
+            + "&size=" + size
+            + "&sortBy=" + sortBy
+            + "&direction=" + direction, GET, requestEntity,
+        new ParameterizedTypeReference<StandardResponse<PaginationResponseDto<CondominiumResponseDto>>>() {
+        });
+
+    System.out.println("Response:" + response.getBody());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().getData().content()).isNotEmpty();
+    assertThat(response.getBody().getData().totalPages()).isEqualTo(1);
+    assertThat(response.getBody().getData().totalElements()).isEqualTo(1);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideBrokenPaginationInfo")
+  void givenBrokenPaginationInfo_whenGetAllCondominiums_thenReturnBadRequest(
+      int page, int size, String sortBy, String direction, String expectedErrorMessage) {
+
+    HttpEntity<CondominiumRequestDto> requestEntity = createRequestEntityWithDefaultHeaders(null);
+
+    String url = "http://localhost:" + port + "/condominiums?page=" + page
+        + "&size=" + size
+        + "&sortBy=" + sortBy
+        + "&direction=" + direction;
+
+    ResponseEntity<StandardResponse<StandardErrorMessage>> response = restTemplate.exchange(
+        url, GET, requestEntity,
+        new ParameterizedTypeReference<StandardResponse<StandardErrorMessage>>() {
+        });
+
+    System.out.println("Response:" + response.getBody());
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().getData()).isNotNull();
+    assertThat(response.getBody().getData().details()).isEqualTo(expectedErrorMessage);
+
+  }
+
+  public static Stream<Arguments> provideBrokenPaginationInfo() {
+    return Stream.of(
+        Arguments.of(1, 10, "id", "INVALID", ObjectValidatorErrors.PAGINATION_DIRECTION_FORMAT_INVALID),
+        Arguments.of(0, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
+        Arguments.of(1, 10, "INVALID", "ASC", "No property 'INVALID' found for type 'Condominium'"),
+        Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
+    );
   }
 
   private <T> HttpEntity<T> createRequestEntityWithDefaultHeaders(T body) {

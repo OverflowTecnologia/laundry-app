@@ -3,6 +3,7 @@ package com.overflow.laundry.exception;
 import com.overflow.laundry.config.StandardResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -105,6 +106,13 @@ public class ControllerExceptionHandler {
       CondominiumNotFoundException ex, WebRequest request) {
     StandardErrorMessage message = getStandardErrorMessage(ex, request);
     return StandardResponse.error(NOT_FOUND, message);
+  }
+
+  @ExceptionHandler(PropertyReferenceException.class)
+  public ResponseEntity<StandardResponse<StandardErrorMessage>> handlePropertyReferenceException(
+      PropertyReferenceException ex, WebRequest request) {
+    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+    return StandardResponse.error(INVALID_PARAMETER, message);
   }
 
   private String formatConstraintViolationMessage(ConstraintViolation<?> violation) {
