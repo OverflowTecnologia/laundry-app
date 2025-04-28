@@ -8,25 +8,25 @@ import static com.overflow.laundry.constant.ObjectValidatorErrors.PAGINATION_SIZ
 
 @Builder
 public record PaginationRequestDto(
-    Integer page,
-    Integer size,
+    Integer pageNumber,
+    Integer pageSize,
     String sortBy,
     String direction
 ) {
 
-  public PaginationRequestDto(Integer page, Integer size, String sortBy, String direction) {
-    this.page = page == null ? 1 : page;
-    this.size = size == null ? 10 : size;
+  public PaginationRequestDto(Integer pageNumber, Integer pageSize, String sortBy, String direction) {
+    this.pageNumber = pageNumber == null ? 1 : pageNumber;
+    this.pageSize = pageSize == null ? 10 : pageSize;
     this.sortBy = sortBy == null ? "id" : sortBy;
     this.direction = direction == null ? "DESC" : direction.toUpperCase();
     validate(this);
   }
 
   private void validate(PaginationRequestDto paginationRequestDto) {
-    if (page != null && page <= 0) {
+    if (pageNumber != null && pageNumber <= 0) {
       throw new IllegalArgumentException(PAGINATION_PAGE_INVALID);
     }
-    if (size != null && size <= 0) {
+    if (pageSize != null && pageSize <= 0) {
       throw new IllegalArgumentException(PAGINATION_SIZE_INVALID);
     }
     if (!sortBy.isEmpty()

@@ -1,19 +1,20 @@
 package com.overflow.laundry.service;
 
-import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.MachineRequestDto;
+import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 
 public interface MachineService {
-  MachineDto createMachine(MachineDto machineDto);
+  MachineResponseDto createMachine(MachineRequestDto machineRequestDto);
 
-  MachineDto getMachineById(Long id);
+  MachineResponseDto getMachineById(Long id);
 
-  MachineDto updateMachine(MachineDto machineDto);
+  MachineResponseDto updateMachine(MachineRequestDto machineRequestDto);
 
   void deleteMachine(Long id);
 
-  PaginationResponseDto<MachineDto> getAllMachines(PaginationRequestDto paginationRequestDto);
+  PaginationResponseDto<MachineResponseDto> getAllMachines(PaginationRequestDto paginationRequestDto);
 
-  MachineDto getMachineByIdentifier(String identifier);
+  MachineResponseDto getMachineByCondominiumAndIdentifier(Long condominiumId, String identifier);
 }

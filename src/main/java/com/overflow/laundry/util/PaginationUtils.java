@@ -1,6 +1,5 @@
 package com.overflow.laundry.util;
 
-import com.overflow.laundry.model.dto.MachineDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import lombok.AccessLevel;
@@ -18,9 +17,9 @@ import java.util.function.Function;
 public class PaginationUtils {
 
   public static Pageable toPageable(PaginationRequestDto paginationRequestDto) {
-    int pageNumber = paginationRequestDto.page() - 1;
+    int pageNumber = paginationRequestDto.pageNumber() - 1; // Adjusting page number to be 1-based
     return PageRequest.of(pageNumber,
-        paginationRequestDto.size(),
+        paginationRequestDto.pageSize(),
         Sort.Direction.valueOf(paginationRequestDto.direction()),
         paginationRequestDto.sortBy());
   }
@@ -31,8 +30,8 @@ public class PaginationUtils {
         .content(content)
         .totalPages(page.getTotalPages())
         .totalElements(page.getTotalElements())
-        .size(page.getSize())
-        .page(page.getNumber())
+        .pageSize(page.getSize())
+        .pageNumber(page.getNumber() + 1) // Adjusting page number to be 1-based
         .empty(page.isEmpty())
         .last(page.isLast())
         .first(page.isFirst())

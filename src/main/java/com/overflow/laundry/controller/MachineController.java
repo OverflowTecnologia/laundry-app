@@ -2,13 +2,16 @@ package com.overflow.laundry.controller;
 
 
 import com.overflow.laundry.config.StandardResponse;
-import com.overflow.laundry.model.dto.MachineDto;
+import com.overflow.laundry.model.dto.MachineRequestDto;
+import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationRequestDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import com.overflow.laundry.service.MachineService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +30,7 @@ import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_UPDATED;
 
 @RestController
 @RequestMapping("/machines")
+@Validated
 public class MachineController {
 
   private final MachineService machineService;
@@ -36,21 +40,23 @@ public class MachineController {
   }
 
   @PostMapping
-  public ResponseEntity<StandardResponse<MachineDto>> createMachine(@Valid @RequestBody MachineDto machineDto) {
-    MachineDto createdMachine = machineService.createMachine(machineDto);
+  public ResponseEntity<StandardResponse<MachineResponseDto>> createMachine(
+      @Valid @RequestBody MachineRequestDto machineRequestDto) {
+    MachineResponseDto createdMachine = machineService.createMachine(machineRequestDto);
     return StandardResponse.success(MACHINE_CREATED, createdMachine);
 
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<StandardResponse<MachineDto>> getMachineById(@PathVariable Long id) {
-    MachineDto machine = machineService.getMachineById(id);
+  public ResponseEntity<StandardResponse<MachineResponseDto>> getMachineById(@PathVariable Long id) {
+    MachineResponseDto machine = machineService.getMachineById(id);
     return StandardResponse.success(MACHINE_FOUND, machine);
   }
 
   @PutMapping
-  public ResponseEntity<StandardResponse<MachineDto>> updateMachine(@Valid @RequestBody MachineDto machineDto) {
-    MachineDto updatedMachine = machineService.updateMachine(machineDto);
+  public ResponseEntity<StandardResponse<MachineResponseDto>> updateMachine(
+      @Valid @RequestBody MachineRequestDto machineRequestDto) {
+    MachineResponseDto updatedMachine = machineService.updateMachine(machineRequestDto);
     return StandardResponse.success(MACHINE_UPDATED, updatedMachine);
   }
 
@@ -60,22 +66,24 @@ public class MachineController {
     return StandardResponse.success(MACHINE_DELETED, "");
   }
 
-  @GetMapping("/identifier/{identifier}")
-  public ResponseEntity<StandardResponse<MachineDto>> getMachineByIdentifier(
-      @PathVariable @NotBlank String identifier) {
-    MachineDto machine = machineService.getMachineByIdentifier(identifier);
+
+  @GetMapping("/identifier")
+  public ResponseEntity<StandardResponse<MachineResponseDto>> getMachineByIdentifier(
+      @RequestParam @NotNull Long condominiumId,
+      @RequestParam @NotBlank String identifier) {
+    MachineResponseDto machine = machineService.getMachineByCondominiumAndIdentifier(condominiumId, identifier);
     return StandardResponse.success(MACHINE_FOUND, machine);
   }
 
   @GetMapping
-  public ResponseEntity<StandardResponse<PaginationResponseDto<MachineDto>>> getAllMachines(
+  public ResponseEntity<StandardResponse<PaginationResponseDto<MachineResponseDto>>> getAllMachines(
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size,
       @RequestParam(required = false) String sortBy,
       @RequestParam(required = false) String direction) {
 
-    final PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
-    final PaginationResponseDto<MachineDto> allMachines = machineService.getAllMachines(paginationRequest);
+    PaginationRequestDto paginationRequest = new PaginationRequestDto(page, size, sortBy, direction);
+    PaginationResponseDto<MachineResponseDto> allMachines = machineService.getAllMachines(paginationRequest);
     return StandardResponse.success(MACHINE_FOUND, allMachines);
 
   }
