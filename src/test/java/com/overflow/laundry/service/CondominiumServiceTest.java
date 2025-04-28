@@ -109,7 +109,7 @@ public class CondominiumServiceTest {
     assertEquals(1, allCondominiums.totalElements());
     assertEquals(allCondominiums.page(), paginationRequestDto.page());
     assertEquals(1, allCondominiums.size()); //TODO: It should be 10 however the mock is returning 1:
-    //TODO Guessing it is a bug because of the variable name size.
+    //TODO Guessing it is a bug because of the variable name SIZE.
     assertFalse(allCondominiums.empty());
     assertTrue(allCondominiums.first());
     assertTrue(allCondominiums.last());

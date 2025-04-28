@@ -44,7 +44,7 @@ public class PaginationUtilsTest {
 
   @Test
   void givenPageAndMapper_whenToPaginationResponse_thenReturnPaginationResponseDto() {
-    Page mockPage = mock(Page.class);
+    Page<String> mockPage = mock(Page.class);
     when(mockPage.getTotalPages()).thenReturn(5);
     when(mockPage.getTotalElements()).thenReturn(50L);
     when(mockPage.getSize()).thenReturn(10);
@@ -56,7 +56,7 @@ public class PaginationUtilsTest {
 
     Function<String, String> mapper = Function.identity();
 
-    PaginationResponseDto responseDto = PaginationUtils.toPaginationResponse(mockPage, mapper);
+    PaginationResponseDto<String> responseDto = PaginationUtils.toPaginationResponse(mockPage, mapper);
 
     assertEquals(5, responseDto.totalPages());
     assertEquals(50L, responseDto.totalElements());

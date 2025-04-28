@@ -2,11 +2,16 @@ package com.overflow.laundry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.overflow.laundry.config.StandardResponse;
+import com.overflow.laundry.constant.ObjectValidatorErrors;
+import com.overflow.laundry.exception.StandardErrorMessage;
 import com.overflow.laundry.model.dto.MachineRequestDto;
 import com.overflow.laundry.model.dto.MachineResponseDto;
 import com.overflow.laundry.model.dto.PaginationResponseDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -24,6 +29,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -240,6 +246,40 @@ public class MachineControllerIntegrationTest {
     assertThat(response.getBody().getData().first()).isTrue();
     assertThat(response.getBody().getData().last()).isTrue();
 
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideBrokenPaginationInfo")
+  void givenSomePaginationPropertyIsInvalid_whenGetAllMachinesIsCalled_thenReturnBadRequest(Integer page,
+                                                                                            Integer size,
+                                                                                            String sortBy,
+                                                                                            String direction,
+                                                                                            String expectedMessage) {
+    HttpEntity<Object> requestEntityWithDefaultHeaders = createRequestEntityWithDefaultHeaders(null);
+    String url = "http://localhost:" + port + "/machines?page=" + page
+        + "&size=" + size
+        + "&sortBy=" + sortBy
+        + "&direction=" + direction;
+    ResponseEntity<StandardResponse<StandardErrorMessage>> response = restTemplate.exchange(
+        url, GET, requestEntityWithDefaultHeaders,
+        new ParameterizedTypeReference<StandardResponse<StandardErrorMessage>>() {
+        });
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().isSuccess()).isFalse();
+    assertThat(response.getBody().getMessage()).isEqualTo(HttpStatus.BAD_REQUEST.getReasonPhrase());
+    assertThat(response.getBody().getData().details()).isEqualTo(expectedMessage);
+    assertThat(response.getBody().getTimestamp()).isNotNull();
+
+  }
+
+  private static Stream<Arguments> provideBrokenPaginationInfo() {
+    return Stream.of(
+        Arguments.of(1, 10, "id", "INVALID", ObjectValidatorErrors.PAGINATION_DIRECTION_FORMAT_INVALID),
+        Arguments.of(0, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
+        Arguments.of(1, 10, "INVALID", "ASC", "No property 'INVALID' found for type 'Machine'"),
+        Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
+    );
   }
 
   private <T> HttpEntity<T> createRequestEntityWithDefaultHeaders(T body) {

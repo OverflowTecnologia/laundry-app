@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.overflow.laundry.constant.MessageResponseEnum.CONDOMINIUM_NOT_FOUND;
@@ -94,18 +93,8 @@ public class MachineServiceImpl implements MachineService {
   @Override
   public PaginationResponseDto<MachineResponseDto> getAllMachines(PaginationRequestDto paginationRequestDto) {
     Pageable pageable = PaginationUtils.toPageable(paginationRequestDto);
-    Page<Machine> allMachines = machineRepository.findAll(pageable);
-    List<MachineResponseDto> listMachineDto = allMachines.stream().map(machineMapper::toDto).toList();
-    return PaginationResponseDto.<MachineResponseDto>builder() //TODO: Refactor to use PaginationUtils
-        .content(listMachineDto)
-        .totalPages(allMachines.getTotalPages())
-        .totalElements(allMachines.getTotalElements())
-        .size(allMachines.getSize())
-        .page(allMachines.getNumber() + 1) // Adjusting page number to be 1-based
-        .empty(allMachines.isEmpty())
-        .last(allMachines.isLast())
-        .first(allMachines.isFirst())
-        .build();
+    Page<Machine> machinePage = machineRepository.findAll(pageable);
+    return PaginationUtils.toPaginationResponse(machinePage, machineMapper::toDto);
   }
 
   @Override

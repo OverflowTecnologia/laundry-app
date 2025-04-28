@@ -2,7 +2,6 @@ package com.overflow.laundry.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.overflow.laundry.constant.ObjectValidatorErrors;
 import com.overflow.laundry.exception.MachineIdentifierAlreadyInUseException;
 import com.overflow.laundry.exception.MachineNotFoundException;
 import com.overflow.laundry.model.dto.CondominiumResponseDto;
@@ -326,27 +325,6 @@ public class MachineControllerTest {
         .andExpect(jsonPath("$.data.content[1].id").value(2));
   }
 
-  @ParameterizedTest
-  @MethodSource("provideBrokenPaginationInfo")
-  void givenSomePaginationPropertyIsInvalid_whenGetAllMachinesIsCalled_thenReturnBadRequest(Integer size,
-                                                                                            Integer page,
-                                                                                            String sortBy,
-                                                                                            String direction,
-                                                                                            String expectedMessage)
-      throws Exception {
-
-    mockMvc.perform(get("/machines?page=" + size
-            + "&size=" + page
-            + "&sortBy=" + sortBy
-            + "&direction=" + direction)
-            .header("Authorization", "Bearer test_token")
-            .contentType("application/json"))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Bad Request"))
-        .andExpect(jsonPath("$.data.details").value(expectedMessage));
-  }
-
   @Test
   void givenDefaultPagination_whenGetAllMachinesIsCalled_thenReturnStandardJsonFormat() throws Exception {
 
@@ -451,14 +429,6 @@ public class MachineControllerTest {
         Arguments.of(MachineRequestDto.builder().identifier(null).condominiumId(1L).type("Washer").build()),
         Arguments.of(MachineRequestDto.builder().identifier("identifier").condominiumId(null).type("Washer").build()),
         Arguments.of(MachineRequestDto.builder().identifier("identifier").condominiumId(1L).type(null).build())
-    );
-  }
-
-  public static Stream<Arguments> provideBrokenPaginationInfo() { //TODO: transfer to integration test change Id value
-    return Stream.of(
-        Arguments.of(1, 10, "id", "INVALID", ObjectValidatorErrors.PAGINATION_DIRECTION_FORMAT_INVALID),
-        Arguments.of(0, 10, "id", "ASC", ObjectValidatorErrors.PAGINATION_PAGE_INVALID),
-        Arguments.of(1, -1, "id", "ASC", ObjectValidatorErrors.PAGINATION_SIZE_INVALID)
     );
   }
 

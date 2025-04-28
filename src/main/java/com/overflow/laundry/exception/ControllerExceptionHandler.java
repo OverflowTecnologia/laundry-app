@@ -21,6 +21,7 @@ import static com.overflow.laundry.constant.MessageResponseEnum.INVALID_PARAMETE
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_IDENTIFIER_ALREADY_IN_USE;
 import static com.overflow.laundry.constant.MessageResponseEnum.MACHINE_NOT_FOUND;
 import static com.overflow.laundry.constant.MessageResponseEnum.NOT_FOUND;
+import static com.overflow.laundry.util.LogUtils.logError;
 import static com.overflow.laundry.util.LogUtils.logWarn;
 
 
@@ -30,7 +31,13 @@ public class ControllerExceptionHandler {
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<StandardResponse<StandardErrorMessage>> handleAllExceptions(
       Exception ex, WebRequest request) {
-    StandardErrorMessage message = getStandardErrorMessage(ex, request);
+
+    String messageDetail = ex.getLocalizedMessage();
+    logError(messageDetail, ex);
+    StandardErrorMessage message = StandardErrorMessage.builder()
+        .details(messageDetail)
+        .path(request.getDescription(false).replace("uri=", ""))
+        .build();
     return StandardResponse.error(INTERNAL_SERVER_ERROR, message);
   }
 
