@@ -94,8 +94,8 @@ public class CondominiumServiceTest {
   void givenDefaultPagination_whenGetAllCondominiumsIsCalled_thenReturnAllMachines() {
 
     PaginationRequestDto paginationRequestDto = PaginationRequestDto.builder()
-        .page(1)
-        .size(10)
+        .pageNumber(1)
+        .pageSize(10)
         .sortBy("id")
         .direction("ASC")
         .build();
@@ -107,9 +107,8 @@ public class CondominiumServiceTest {
 
     assertEquals(1, allCondominiums.totalPages());
     assertEquals(1, allCondominiums.totalElements());
-    assertEquals(allCondominiums.page(), paginationRequestDto.page());
-    assertEquals(1, allCondominiums.size()); //TODO: It should be 10 however the mock is returning 1:
-    //TODO Guessing it is a bug because of the variable name SIZE.
+    assertEquals(allCondominiums.pageNumber(), paginationRequestDto.pageNumber());
+    assertEquals(1, allCondominiums.pageSize());
     assertFalse(allCondominiums.empty());
     assertTrue(allCondominiums.first());
     assertTrue(allCondominiums.last());

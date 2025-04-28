@@ -9,8 +9,8 @@ public record PaginationResponseDto<T>(
     Collection<T> content,
     Integer totalPages,
     long totalElements,
-    Integer size,
-    Integer page,
+    Integer pageSize,
+    Integer pageNumber,
     boolean empty,
     boolean last,
     boolean first

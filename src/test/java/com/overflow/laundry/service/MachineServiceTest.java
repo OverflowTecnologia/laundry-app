@@ -188,8 +188,8 @@ public class MachineServiceTest {
 
     List<Machine> machines = List.of(getMockMachine());
     PaginationRequestDto defaultPagination = PaginationRequestDto.builder()
-        .page(1)
-        .size(10)
+        .pageNumber(1)
+        .pageSize(10)
         .sortBy("id")
         .direction("DESC")
         .build();
@@ -199,9 +199,8 @@ public class MachineServiceTest {
     PaginationResponseDto<MachineResponseDto> allMachines = machineService.getAllMachines(defaultPagination);
 
     assertEquals(1, allMachines.totalPages());
-    assertEquals(1, allMachines.size()); //TODO: It should be 10 however the mock is returning 1
-    //TODO Guessing it is a bug because of the variable name SIZE.
-    assertEquals(1, allMachines.page());
+    assertEquals(1, allMachines.pageSize());
+    assertEquals(1, allMachines.pageNumber());
     assertEquals(1L, allMachines.totalElements());
     assertFalse(allMachines.empty());
     assertTrue(allMachines.first());

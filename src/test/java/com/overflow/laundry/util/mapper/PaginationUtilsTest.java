@@ -26,14 +26,14 @@ public class PaginationUtilsTest {
   void givenPaginationRequestDto_whenToPageable_thenReturnPageable() {
 
     PaginationRequestDto paginationRequestDto = PaginationRequestDto.builder()
-        .page(1)
-        .size(10)
+        .pageNumber(1)
+        .pageSize(10)
         .sortBy("id")
         .direction("DESC")
         .build();
 
-    Pageable mockPageable = PageRequest.of(paginationRequestDto.page() - 1,
-        paginationRequestDto.size(),
+    Pageable mockPageable = PageRequest.of(paginationRequestDto.pageNumber() - 1,
+        paginationRequestDto.pageSize(),
         Sort.Direction.valueOf(paginationRequestDto.direction()),
         paginationRequestDto.sortBy());
 
@@ -60,8 +60,8 @@ public class PaginationUtilsTest {
 
     assertEquals(5, responseDto.totalPages());
     assertEquals(50L, responseDto.totalElements());
-    assertEquals(10, responseDto.size());
-    assertEquals(1, responseDto.page());
+    assertEquals(10, responseDto.pageSize());
+    assertEquals(1, responseDto.pageNumber());
     assertFalse(responseDto.empty());
     assertFalse(responseDto.last());
     assertTrue(responseDto.first());

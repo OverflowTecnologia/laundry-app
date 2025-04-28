@@ -240,8 +240,8 @@ public class MachineControllerIntegrationTest {
     assertThat(response.getBody().getData().content()).hasSize(1);
     assertThat(response.getBody().getData().totalPages()).isEqualTo(1);
     assertThat(response.getBody().getData().totalElements()).isEqualTo(1);
-    assertThat(response.getBody().getData().page()).isEqualTo(1);
-    assertThat(response.getBody().getData().size()).isEqualTo(10);
+    assertThat(response.getBody().getData().pageNumber()).isEqualTo(1);
+    assertThat(response.getBody().getData().pageSize()).isEqualTo(10);
     assertThat(response.getBody().getData().empty()).isFalse();
     assertThat(response.getBody().getData().first()).isTrue();
     assertThat(response.getBody().getData().last()).isTrue();

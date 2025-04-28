@@ -213,8 +213,8 @@ public class CondominiumControllerTest {
         .andExpect(jsonPath("$.data.empty").value(false))
         .andExpect(jsonPath("$.data.totalPages").value(1))
         .andExpect(jsonPath("$.data.totalElements").value(mockCondominiumResponseDto.size()))
-        .andExpect(jsonPath("$.data.size").value(size))
-        .andExpect(jsonPath("$.data.page").value(page))
+        .andExpect(jsonPath("$.data.pageSize").value(size))
+        .andExpect(jsonPath("$.data.pageNumber").value(page))
         .andExpect(jsonPath("$.data.last").value(true))
         .andExpect(jsonPath("$.data.first").value(true));
   }
@@ -225,8 +225,8 @@ public class CondominiumControllerTest {
         .content(mockCondominiumResponseDto)
         .totalPages(1)
         .totalElements(mockCondominiumResponseDto.size())
-        .size(10)
-        .page(1)
+        .pageSize(10)
+        .pageNumber(1)
         .empty(false)
         .last(true)
         .first(true)
